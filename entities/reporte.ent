@@ -1,0 +1,33 @@
+type float64
+
+entity Movimiento {
+ 	numero  				: string
+ 	estado_movimiento		: string
+ 	fecha_movimiento		: time
+ 	numero_oficio			: integer
+ 	fecha_oficio			: time
+ 	descripcion				: string
+ 	unidad_ejecutora		: integer
+ 	apropiacion_destino		: integer
+ 	apropiacion_origen		: integer
+ 	valor					: float64
+ 	tipo_movimiento			: string
+}
+
+entity Apropiaciones {
+	vigencia: integer
+	valor_inicial: float64
+	movimientos: Movimiento
+}
+
+entity Rubro {
+	codigo: string
+	Nombre: string
+	entidad: string
+	descripcion: string
+	unidad_ejecutora: integer
+	apropiaciones: Apropiaciones
+}
+
+
+

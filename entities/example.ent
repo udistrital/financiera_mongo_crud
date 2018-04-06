@@ -1,5 +1,0 @@
-entity Agenda {
-    nombre : string
-    apellido : string
-    telefono : string
-}

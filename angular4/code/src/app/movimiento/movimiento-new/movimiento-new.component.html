@@ -1,0 +1,89 @@
+<h3>Creaci&oacute;n Movimiento</h3>
+<p-dialog header="Jornadas" [(visible)]="display">
+  La movimiento ha sido editada correctamente
+  <p-footer>
+    <button type="button" pButton icon="fa-check" (click)="cerrarDialogo()" label="Cerrar"></button>
+  </p-footer>
+</p-dialog>
+<div class="ui-g">
+  <div class="ui-g-8">
+    <form class="form-horizontal">
+    <!------------------------------------------------>
+    <div class="form-group">
+      <label for="numero" class="col-sm-2 control-label">Numero </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="numero" placeholder="Numero Movimiento" [(ngModel)]="movimiento.numero" name="numero">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="estado_movimiento" class="col-sm-2 control-label">Estado_movimiento </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="estado_movimiento" placeholder="Estado_movimiento Movimiento" [(ngModel)]="movimiento.estado_movimiento" name="estado_movimiento">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="fecha_movimiento" class="col-sm-2 control-label">Fecha_movimiento </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="fecha_movimiento" placeholder="Fecha_movimiento Movimiento" [(ngModel)]="movimiento.fecha_movimiento" name="fecha_movimiento">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="numero_oficio" class="col-sm-2 control-label">Numero_oficio </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="numero_oficio" placeholder="Numero_oficio Movimiento" [(ngModel)]="movimiento.numero_oficio" name="numero_oficio">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="fecha_oficio" class="col-sm-2 control-label">Fecha_oficio </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="fecha_oficio" placeholder="Fecha_oficio Movimiento" [(ngModel)]="movimiento.fecha_oficio" name="fecha_oficio">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="descripcion" class="col-sm-2 control-label">Descripcion </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="descripcion" placeholder="Descripcion Movimiento" [(ngModel)]="movimiento.descripcion" name="descripcion">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="unidad_ejecutora" class="col-sm-2 control-label">Unidad_ejecutora </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="unidad_ejecutora" placeholder="Unidad_ejecutora Movimiento" [(ngModel)]="movimiento.unidad_ejecutora" name="unidad_ejecutora">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="apropiacion_destino" class="col-sm-2 control-label">Apropiacion_destino </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="apropiacion_destino" placeholder="Apropiacion_destino Movimiento" [(ngModel)]="movimiento.apropiacion_destino" name="apropiacion_destino">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="apropiacion_origen" class="col-sm-2 control-label">Apropiacion_origen </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="apropiacion_origen" placeholder="Apropiacion_origen Movimiento" [(ngModel)]="movimiento.apropiacion_origen" name="apropiacion_origen">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="valor" class="col-sm-2 control-label">Valor </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="valor" placeholder="Valor Movimiento" [(ngModel)]="movimiento.valor" name="valor">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="tipo_movimiento" class="col-sm-2 control-label">Tipo_movimiento </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="tipo_movimiento" placeholder="Tipo_movimiento Movimiento" [(ngModel)]="movimiento.tipo_movimiento" name="tipo_movimiento">
+      </div>
+    </div>
+
+    <!------------------------------------------------>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default" (click)="guardar(movimiento)">Guardar</button>
+          <button type="submit" class="btn btn-default" (click)="regresar()">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</div>
