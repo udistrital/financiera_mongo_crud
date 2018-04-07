@@ -1,12 +1,15 @@
 package controllers
 
 import (
-  "api/db"
+	"api/db"
 	"api/models"
-	"github.com/astaxie/beego"
 	"encoding/json"
-	_ "gopkg.in/mgo.v2"
+	"errors"
 	"fmt"
+	"github.com/astaxie/beego"
+	_ "gopkg.in/mgo.v2"
+	"strconv"
+	"strings"
 )
 
 // Operaciones Crud Apropiaciones
@@ -20,10 +23,30 @@ type ApropiacionesController struct {
 // @Failure 403 :objectId is empty
 // @router / [get]
 func (j *ApropiacionesController) GetAll() {
-	session,_ := db.GetSession()
-	obs := models.GetAllApropiacioness(session)
+	session, _ := db.GetSession()
+	var query = make(map[string]interface{})
 
-  if len(obs) == 0 {
+	if v := j.GetString("query"); v != "" {
+		for _, cond := range strings.Split(v, ",") {
+			kv := strings.SplitN(cond, ":", 2)
+			if len(kv) != 2 {
+				j.Data["json"] = errors.New("Consulta invalida")
+				j.ServeJSON()
+				return
+			}
+
+			if i, err := strconv.Atoi(kv[1]); err == nil {
+				fmt.Println("puede ser convertido")
+				k, v := kv[0], i
+				query[k] = v
+			} else {
+				k, v := kv[0], kv[1]
+				query[k] = v
+			}
+		}
+	}
+	obs := models.GetAllApropiacioness(session, query)
+	if len(obs) == 0 {
 		j.Data["json"] = []string{}
 	} else {
 		j.Data["json"] = &obs
@@ -42,7 +65,7 @@ func (j *ApropiacionesController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		apropiaciones, err := models.GetApropiacionesById(session,id)
+		apropiaciones, err := models.GetApropiacionesById(session, id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
@@ -59,9 +82,9 @@ func (j *ApropiacionesController) Get() {
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
 func (j *ApropiacionesController) Delete() {
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteApropiacionesById(session,objectId)
+	result, _ := models.DeleteApropiacionesById(session, objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
@@ -76,8 +99,8 @@ func (j *ApropiacionesController) Post() {
 	var apropiaciones models.Apropiaciones
 	json.Unmarshal(j.Ctx.Input.RequestBody, &apropiaciones)
 	fmt.Println(apropiaciones)
-	session,_ := db.GetSession()
-	models.InsertApropiaciones(session,apropiaciones)
+	session, _ := db.GetSession()
+	models.InsertApropiaciones(session, apropiaciones)
 	j.Data["json"] = "insert success!"
 	j.ServeJSON()
 }
@@ -94,9 +117,9 @@ func (j *ApropiacionesController) Put() {
 
 	var apropiaciones models.Apropiaciones
 	json.Unmarshal(j.Ctx.Input.RequestBody, &apropiaciones)
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 
-	err := models.UpdateApropiaciones(session, apropiaciones,objectId)
+	err := models.UpdateApropiaciones(session, apropiaciones, objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {

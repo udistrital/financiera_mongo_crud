@@ -1,24 +1,25 @@
 package models
 
 import (
-  "api/db"
-	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/mgo.v2"
+	"api/db"
+	"bytes"
 	"fmt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	// "reflect"
 )
 
 const ApropiacionesCollection = "apropiaciones"
 
 type Apropiaciones struct {
-	Id bson.ObjectId `json:"_id" bson:"_id,omitempty"`
-  Vigencia int `json:"vigencia"`
-  Valor_inicial float64 `json:"valor_inicial"`
-  Movimientos []Movimiento `json:"movimientoss"`
+	Id            bson.ObjectId `json:"_id" bson:"_id,omitempty"`
+	Vigencia      int           `json:"vigencia"`
+	Valor_inicial float64       `json:"valor_inicial"`
+	Movimientos   []Movimiento  `json:"movimientos"`
 }
 
-
-func UpdateApropiaciones(session *mgo.Session, j Apropiaciones, id string) error{
-	c := db.Cursor(session,ApropiacionesCollection)
+func UpdateApropiaciones(session *mgo.Session, j Apropiaciones, id string) error {
+	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
 	// Update
 	err := c.Update(bson.M{"_id": bson.ObjectIdHex(id)}, &j)
@@ -29,37 +30,47 @@ func UpdateApropiaciones(session *mgo.Session, j Apropiaciones, id string) error
 
 }
 
-
 func InsertApropiaciones(session *mgo.Session, j Apropiaciones) {
-	c := db.Cursor(session,ApropiacionesCollection)
+	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
 	c.Insert(j)
 
 }
 
-func GetAllApropiacioness(session *mgo.Session) []Apropiaciones {
-	c := db.Cursor(session,ApropiacionesCollection)
+func GetAllApropiacioness(session *mgo.Session, query map[string]interface{}) []Apropiaciones {
+	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
-    fmt.Println("Getting all apropiacioness")
+	var buffer bytes.Buffer
+	buffer.WriteString("")
+	fmt.Println("Getting all apropiacioness")
 	var apropiacioness []Apropiaciones
-	err := c.Find(bson.M{}).All(&apropiacioness)
+	// if len(query) != 0 {
+	// 	for key, value := range query {
+	// 		buffer.WriteString(key)
+	// 		buffer.WriteString(":")
+	// 		buffer.WriteString(value)
+	// 		buffer.WriteString(",")
+	// 	}
+	// }
+	fmt.Println(query)
+	err := c.Find(query).All(&apropiacioness)
 	if err != nil {
 		fmt.Println(err)
 	}
 	return apropiacioness
 }
 
-func GetApropiacionesById(session *mgo.Session,id string) ([]Apropiaciones,error) {
+func GetApropiacionesById(session *mgo.Session, id string) ([]Apropiaciones, error) {
 	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
 	var apropiacioness []Apropiaciones
 	err := c.Find(bson.M{"_id": bson.ObjectIdHex(id)}).All(&apropiacioness)
-	return apropiacioness,err
+	return apropiacioness, err
 }
 
-func DeleteApropiacionesById(session *mgo.Session,id string) (string,error) {
-	c:= db.Cursor(session, ApropiacionesCollection)
+func DeleteApropiacionesById(session *mgo.Session, id string) (string, error) {
+	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
 	err := c.RemoveId(bson.ObjectIdHex(id))
-	return "ok",err
+	return "ok", err
 }
