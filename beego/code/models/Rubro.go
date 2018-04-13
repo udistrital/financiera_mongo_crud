@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -38,12 +39,12 @@ func InsertRubro(session *mgo.Session, j Rubro) {
 
 }
 
-func GetAllRubros(session *mgo.Session) []Rubro {
+func GetAllRubros(session *mgo.Session, query map[string]interface{}) []Rubro {
 	c := db.Cursor(session, RubroCollection)
 	defer session.Close()
 	fmt.Println("Getting all rubros")
 	var rubros []Rubro
-	err := c.Find(bson.M{}).All(&rubros)
+	err := c.Find(query).All(&rubros)
 	if err != nil {
 		fmt.Println(err)
 	}

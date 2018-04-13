@@ -16,6 +16,8 @@ entity Movimiento {
 
 entity Apropiaciones {
 	vigencia: integer
+  mes: integer
+  mes: integer
 	valor_inicial: float64
 	movimiento: Movimiento
 }
@@ -26,8 +28,5 @@ entity Rubro {
 	entidad: string
 	descripcion: string
 	unidad_ejecutora: integer
-	apropiacione: Apropiaciones
+	apropiacion: Apropiaciones
 }
-
-
-

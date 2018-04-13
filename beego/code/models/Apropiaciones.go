@@ -2,8 +2,8 @@ package models
 
 import (
 	"api/db"
-	"bytes"
 	"fmt"
+
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	// "reflect"
@@ -40,19 +40,8 @@ func InsertApropiaciones(session *mgo.Session, j Apropiaciones) {
 func GetAllApropiacioness(session *mgo.Session, query map[string]interface{}) []Apropiaciones {
 	c := db.Cursor(session, ApropiacionesCollection)
 	defer session.Close()
-	var buffer bytes.Buffer
-	buffer.WriteString("")
 	fmt.Println("Getting all apropiacioness")
 	var apropiacioness []Apropiaciones
-	// if len(query) != 0 {
-	// 	for key, value := range query {
-	// 		buffer.WriteString(key)
-	// 		buffer.WriteString(":")
-	// 		buffer.WriteString(value)
-	// 		buffer.WriteString(",")
-	// 	}
-	// }
-	fmt.Println(query)
 	err := c.Find(query).All(&apropiacioness)
 	if err != nil {
 		fmt.Println(err)
