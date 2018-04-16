@@ -3,22 +3,22 @@ type float64
 entity Movimiento {
  	numero  				: string
  	estado_movimiento		: string
- 	fecha_movimiento		: time
+ 	fecha_movimiento		: string
  	numero_oficio			: integer
- 	fecha_oficio			: time
+ 	fecha_oficio			: string
  	descripcion				: string
  	unidad_ejecutora		: integer
  	apropiacion_destino		: integer
  	apropiacion_origen		: integer
- 	valor					: float64
+ 	valor					      : integer
  	tipo_movimiento			: string
 }
 
-entity Apropiaciones {
+entity Apropiacion {
 	vigencia: integer
   mes: integer
   mes: integer
-	valor_inicial: float64
+	valor_inicial: integer
 	movimiento: Movimiento
 }
 
@@ -28,5 +28,16 @@ entity Rubro {
 	entidad: string
 	descripcion: string
 	unidad_ejecutora: integer
-	apropiacion: Apropiaciones
+	apropiacion: Apropiacion
+}
+
+entity DisponibilidadApropiacion {
+  apropiacion: Apropiacion
+  valor: integer
+  fuente_financiamiento: integer
+}
+
+entity RegistroPresupuestal {
+  disponibilidad_apropiacion: DisponibilidadApropiacion
+  valor: integer
 }
