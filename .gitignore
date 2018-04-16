@@ -1,3 +1,8 @@
 .DS_Store
 /angular4/code/package-lock.json
 /angular4/code/node_modules
+/beego/code/api
+/beego/code/api~
+/beego/code/api.exe
+/beego/code/api.exe~
+/beego/code/lastupdate.tmp 
