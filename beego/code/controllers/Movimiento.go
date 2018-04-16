@@ -1,12 +1,13 @@
 package controllers
 
 import (
-  "api/db"
+	"api/db"
 	"api/models"
-	"github.com/astaxie/beego"
 	"encoding/json"
-	_ "gopkg.in/mgo.v2"
 	"fmt"
+
+	"github.com/astaxie/beego"
+	_ "gopkg.in/mgo.v2"
 )
 
 // Operaciones Crud Movimiento
@@ -20,10 +21,10 @@ type MovimientoController struct {
 // @Failure 403 :objectId is empty
 // @router / [get]
 func (j *MovimientoController) GetAll() {
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 	obs := models.GetAllMovimientos(session)
 
-  if len(obs) == 0 {
+	if len(obs) == 0 {
 		j.Data["json"] = []string{}
 	} else {
 		j.Data["json"] = &obs
@@ -42,7 +43,7 @@ func (j *MovimientoController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		movimiento, err := models.GetMovimientoById(session,id)
+		movimiento, err := models.GetMovimientoById(session, id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
@@ -59,9 +60,9 @@ func (j *MovimientoController) Get() {
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
 func (j *MovimientoController) Delete() {
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteMovimientoById(session,objectId)
+	result, _ := models.DeleteMovimientoById(session, objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
@@ -76,9 +77,9 @@ func (j *MovimientoController) Post() {
 	var movimiento models.Movimiento
 	json.Unmarshal(j.Ctx.Input.RequestBody, &movimiento)
 	fmt.Println(movimiento)
-	session,_ := db.GetSession()
-	models.InsertMovimiento(session,movimiento)
-	j.Data["json"] = "insert success!"
+	session, _ := db.GetSession()
+	id := models.InsertMovimiento(session, movimiento)
+	j.Data["json"] = id
 	j.ServeJSON()
 }
 
@@ -94,9 +95,9 @@ func (j *MovimientoController) Put() {
 
 	var movimiento models.Movimiento
 	json.Unmarshal(j.Ctx.Input.RequestBody, &movimiento)
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 
-	err := models.UpdateMovimiento(session, movimiento,objectId)
+	err := models.UpdateMovimiento(session, movimiento, objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
