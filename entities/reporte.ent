@@ -12,14 +12,15 @@ entity Movimiento {
  	apropiacion_origen		: integer
  	valor					      : integer
  	tipo_movimiento			: string
+  apropiacion: Apropiacion
 }
 
 entity Apropiacion {
 	vigencia: integer
   mes: integer
-  mes: integer
 	valor_inicial: integer
 	movimiento: Movimiento
+  rubro: Rubro
 }
 
 entity Rubro {
@@ -28,13 +29,13 @@ entity Rubro {
 	entidad: string
 	descripcion: string
 	unidad_ejecutora: integer
-	apropiacion: Apropiacion
+	hijos: string
 }
 
 entity DisponibilidadApropiacion {
-  apropiacion: Apropiacion
   valor: integer
   fuente_financiamiento: integer
+  apropiacion: Apropiacion
 }
 
 entity RegistroPresupuestal {
