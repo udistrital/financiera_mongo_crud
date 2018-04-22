@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "GetAll",
 			Router: `/`,
@@ -15,7 +15,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "Post",
 			Router: `/`,
@@ -23,7 +23,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "Options",
 			Router: `/`,
@@ -31,7 +31,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "Get",
 			Router: `/:id`,
@@ -39,7 +39,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "Delete",
 			Router: `/:objectId`,
@@ -47,7 +47,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
 			Method: "Put",
 			Router: `/:objectId`,
@@ -55,9 +55,65 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ApropiacionesController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionesController"],
+	beego.GlobalControllerRouter["api/controllers:ApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:ApropiacionController"],
 		beego.ControllerComments{
-			Method: "ApropiacionesDeleteOptions",
+			Method: "ApropiacionDeleteOptions",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "GetAll",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "Post",
+			Router: `/`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "Options",
+			Router: `/`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "Get",
+			Router: `/:id`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "Delete",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"delete"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "Put",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"put"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"] = append(beego.GlobalControllerRouter["api/controllers:DisponibilidadApropiacionController"],
+		beego.ControllerComments{
+			Method: "DisponibilidadApropiacionDeleteOptions",
 			Router: `/:objectId`,
 			AllowHTTPMethods: []string{"options"},
 			MethodParams: param.Make(),
@@ -114,6 +170,62 @@ func init() {
 	beego.GlobalControllerRouter["api/controllers:MovimientoController"] = append(beego.GlobalControllerRouter["api/controllers:MovimientoController"],
 		beego.ControllerComments{
 			Method: "MovimientoDeleteOptions",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "GetAll",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "Post",
+			Router: `/`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "Options",
+			Router: `/`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "Get",
+			Router: `/:id`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "Delete",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"delete"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "Put",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"put"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
+		beego.ControllerComments{
+			Method: "RegistroPresupuestalDeleteOptions",
 			Router: `/:objectId`,
 			AllowHTTPMethods: []string{"options"},
 			MethodParams: param.Make(),

@@ -8,8 +8,8 @@ entity Movimiento {
  	fecha_oficio			: string
  	descripcion				: string
  	unidad_ejecutora		: integer
- 	apropiacion_destino		: integer
- 	apropiacion_origen		: integer
+ 	rubro_origen		: string
+ 	rubro_destino		: string
  	valor					      : integer
  	tipo_movimiento			: string
   apropiacion: Apropiacion
@@ -19,7 +19,6 @@ entity Apropiacion {
 	vigencia: integer
   mes: integer
 	valor_inicial: integer
-	movimiento: Movimiento
   rubro: Rubro
 }
 

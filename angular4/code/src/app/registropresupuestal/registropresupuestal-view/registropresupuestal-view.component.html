@@ -1,18 +1,14 @@
 
-<h2>Rubros</h2>
+<h2>RegistroPresupuestals</h2>
 <p-confirmDialog header="Confirmation" icon="fa fa-question-circle" width="425" #cd>
   <p-footer>
     <button type="button" pButton icon="fa-close" label="No" (click)="cd.reject()"></button>
     <button type="button" pButton icon="fa-check" label="Si" (click)="cd.accept()"></button>
   </p-footer>
 </p-confirmDialog>
-<p-dataTable [value]="rubros">
-  <p-column field="codigo" header="Codigo" [sortable]="true"></p-column>
-  <p-column field="nombre" header="Nombre" [sortable]="true"></p-column>
-  <p-column field="entidad" header="Entidad" [sortable]="true"></p-column>
-  <p-column field="descripcion" header="Descripcion" [sortable]="true"></p-column>
-  <p-column field="unidad_ejecutora" header="Unidad_ejecutora" [sortable]="true"></p-column>
-  <p-column field="hijos" header="Hijos" [sortable]="true"></p-column>
+<p-dataTable [value]="registropresupuestals">
+  <p-column field="disponibilidad_apropiacion" header="Disponibilidad_apropiacion" [sortable]="true"></p-column>
+  <p-column field="valor" header="Valor" [sortable]="true"></p-column>
 <p-column field="" header="Acciones">
     <ng-template let-col let-registro="rowData" pTemplate="body">
       <button pButton icon="fa-close" type="button" (click)="borrar(registro)"></button>
@@ -20,4 +16,4 @@
     </ng-template>
   </p-column>
 </p-dataTable>
-<button class="accept" pButton type="button" label="Crear Rubro" (click)="newRubro()"></button>
+<button class="accept" pButton type="button" label="Crear RegistroPresupuestal" (click)="newRegistroPresupuestal()"></button>

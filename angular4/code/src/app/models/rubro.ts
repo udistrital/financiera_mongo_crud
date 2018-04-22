@@ -1,5 +1,4 @@
 
-import { Apropiaciones } from './apropiaciones';
 
 export class Rubro {
    _id: string;
@@ -8,5 +7,5 @@ export class Rubro {
   entidad:	string;
   descripcion:	string;
   unidad_ejecutora:	int;
-  apropiaciones: Apropiaciones[];
+  hijos:	string;
 }

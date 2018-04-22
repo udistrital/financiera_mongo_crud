@@ -1,16 +1,15 @@
 package controllers
 
 import (
-	"api/db"
+  "api/db"
 	"api/models"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/astaxie/beego"
+	"encoding/json"
 	_ "gopkg.in/mgo.v2"
+	"fmt"
+  "strconv"
+  "strings"
+  "errors"
 )
 
 // Operaciones Crud Rubro
@@ -24,9 +23,9 @@ type RubroController struct {
 // @Failure 403 :objectId is empty
 // @router / [get]
 func (j *RubroController) GetAll() {
-	session, _ := db.GetSession()
+	session,_ := db.GetSession()
 
-	var query = make(map[string]interface{})
+  var query = make(map[string]interface{})
 
 	if v := j.GetString("query"); v != "" {
 		for _, cond := range strings.Split(v, ",") {
@@ -50,7 +49,7 @@ func (j *RubroController) GetAll() {
 
 	obs := models.GetAllRubros(session, query)
 
-	if len(obs) == 0 {
+  if len(obs) == 0 {
 		j.Data["json"] = []string{}
 	} else {
 		j.Data["json"] = &obs
@@ -69,7 +68,7 @@ func (j *RubroController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		rubro, err := models.GetRubroById(session, id)
+		rubro, err := models.GetRubroById(session,id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
@@ -86,9 +85,9 @@ func (j *RubroController) Get() {
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
 func (j *RubroController) Delete() {
-	session, _ := db.GetSession()
+	session,_ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteRubroById(session, objectId)
+	result, _ := models.DeleteRubroById(session,objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
@@ -103,9 +102,9 @@ func (j *RubroController) Post() {
 	var rubro models.Rubro
 	json.Unmarshal(j.Ctx.Input.RequestBody, &rubro)
 	fmt.Println(rubro)
-	session, _ := db.GetSession()
-	models.InsertRubro(session, rubro)
-	j.Data["json"] = "insert success!"
+	session,_ := db.GetSession()
+	id := models.InsertRubro(session,rubro)
+	j.Data["json"] = id
 	j.ServeJSON()
 }
 
@@ -121,9 +120,9 @@ func (j *RubroController) Put() {
 
 	var rubro models.Rubro
 	json.Unmarshal(j.Ctx.Input.RequestBody, &rubro)
-	session, _ := db.GetSession()
+	session,_ := db.GetSession()
 
-	err := models.UpdateRubro(session, rubro, objectId)
+	err := models.UpdateRubro(session, rubro,objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {

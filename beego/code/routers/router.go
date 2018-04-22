@@ -9,26 +9,37 @@ package routers
 
 import (
 	"api/controllers"
+
 	"github.com/astaxie/beego"
 )
 
 func init() {
 	ns := beego.NewNamespace("/v1",
-  beego.NSNamespace("/movimiento",
-	    beego.NSInclude(
-	      &controllers.MovimientoController{},
-	    ),
-   ),
-  beego.NSNamespace("/apropiaciones",
-	    beego.NSInclude(
-	      &controllers.ApropiacionesController{},
-	    ),
-   ),
-  beego.NSNamespace("/rubro",
-	    beego.NSInclude(
-	      &controllers.RubroController{},
-	    ),
-   ),
+		beego.NSNamespace("/movimiento",
+			beego.NSInclude(
+				&controllers.MovimientoController{},
+			),
+		),
+		beego.NSNamespace("/apropiacion",
+			beego.NSInclude(
+				&controllers.ApropiacionController{},
+			),
+		),
+		beego.NSNamespace("/rubro",
+			beego.NSInclude(
+				&controllers.RubroController{},
+			),
+		),
+		beego.NSNamespace("/disponibilidadapropiacion",
+			beego.NSInclude(
+				&controllers.DisponibilidadApropiacionController{},
+			),
+		),
+		beego.NSNamespace("/registropresupuestal",
+			beego.NSInclude(
+				&controllers.RegistroPresupuestalController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

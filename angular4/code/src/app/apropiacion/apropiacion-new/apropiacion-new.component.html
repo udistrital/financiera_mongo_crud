@@ -1,0 +1,53 @@
+<h3>Creaci&oacute;n Apropiacion</h3>
+<p-dialog header="Jornadas" [(visible)]="display">
+  La apropiacion ha sido editada correctamente
+  <p-footer>
+    <button type="button" pButton icon="fa-check" (click)="cerrarDialogo()" label="Cerrar"></button>
+  </p-footer>
+</p-dialog>
+<div class="ui-g">
+  <div class="ui-g-8">
+    <form class="form-horizontal">
+    <!------------------------------------------------>
+    <div class="form-group">
+      <label for="vigencia" class="col-sm-2 control-label">Vigencia </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="vigencia" placeholder="Vigencia Apropiacion" [(ngModel)]="apropiacion.vigencia" name="vigencia">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="mes" class="col-sm-2 control-label">Mes </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="mes" placeholder="Mes Apropiacion" [(ngModel)]="apropiacion.mes" name="mes">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="valor_inicial" class="col-sm-2 control-label">Valor_inicial </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="valor_inicial" placeholder="Valor_inicial Apropiacion" [(ngModel)]="apropiacion.valor_inicial" name="valor_inicial">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="movimiento" class="col-sm-2 control-label">Movimiento </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="movimiento" placeholder="Movimiento Apropiacion" [(ngModel)]="apropiacion.movimiento" name="movimiento">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="rubro" class="col-sm-2 control-label">Rubro </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="rubro" placeholder="Rubro Apropiacion" [(ngModel)]="apropiacion.rubro" name="rubro">
+      </div>
+    </div>
+
+    <!------------------------------------------------>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default" (click)="guardar(apropiacion)">Guardar</button>
+          <button type="submit" class="btn btn-default" (click)="regresar()">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</div>

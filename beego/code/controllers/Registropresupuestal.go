@@ -12,17 +12,17 @@ import (
   "errors"
 )
 
-// Operaciones Crud Movimiento
-type MovimientoController struct {
+// Operaciones Crud RegistroPresupuestal
+type RegistroPresupuestalController struct {
 	beego.Controller
 }
 
 // @Title GetAll
 // @Description get all objects
-// @Success 200 Movimiento models.Movimiento
+// @Success 200 RegistroPresupuestal models.RegistroPresupuestal
 // @Failure 403 :objectId is empty
 // @router / [get]
-func (j *MovimientoController) GetAll() {
+func (j *RegistroPresupuestalController) GetAll() {
 	session,_ := db.GetSession()
 
   var query = make(map[string]interface{})
@@ -47,7 +47,7 @@ func (j *MovimientoController) GetAll() {
 		}
 	}
 
-	obs := models.GetAllMovimientos(session, query)
+	obs := models.GetAllRegistroPresupuestals(session, query)
 
   if len(obs) == 0 {
 		j.Data["json"] = []string{}
@@ -59,70 +59,70 @@ func (j *MovimientoController) GetAll() {
 }
 
 // @Title Get
-// @Description get Movimiento by nombre
-// @Param	nombre		path 	string	true		"El nombre de la Movimiento a consultar"
-// @Success 200 {object} models.Movimiento
+// @Description get RegistroPresupuestal by nombre
+// @Param	nombre		path 	string	true		"El nombre de la RegistroPresupuestal a consultar"
+// @Success 200 {object} models.RegistroPresupuestal
 // @Failure 403 :uid is empty
 // @router /:id [get]
-func (j *MovimientoController) Get() {
+func (j *RegistroPresupuestalController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		movimiento, err := models.GetMovimientoById(session,id)
+		registropresupuestal, err := models.GetRegistroPresupuestalById(session,id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
-			j.Data["json"] = movimiento
+			j.Data["json"] = registropresupuestal
 		}
 	}
 	j.ServeJSON()
 }
 
-// @Title Borrar Movimiento
-// @Description Borrar Movimiento
+// @Title Borrar RegistroPresupuestal
+// @Description Borrar RegistroPresupuestal
 // @Param	objectId		path 	string	true		"El ObjectId del objeto que se quiere borrar"
 // @Success 200 {string} ok
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
-func (j *MovimientoController) Delete() {
+func (j *RegistroPresupuestalController) Delete() {
 	session,_ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteMovimientoById(session,objectId)
+	result, _ := models.DeleteRegistroPresupuestalById(session,objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
 
-// @Title Crear Movimiento
-// @Description Crear Movimiento
-// @Param	body		body 	models.Movimiento	true		"Body para la creacion de Movimiento"
-// @Success 200 {int} Movimiento.Id
+// @Title Crear RegistroPresupuestal
+// @Description Crear RegistroPresupuestal
+// @Param	body		body 	models.RegistroPresupuestal	true		"Body para la creacion de RegistroPresupuestal"
+// @Success 200 {int} RegistroPresupuestal.Id
 // @Failure 403 body is empty
 // @router / [post]
-func (j *MovimientoController) Post() {
-	var movimiento models.Movimiento
-	json.Unmarshal(j.Ctx.Input.RequestBody, &movimiento)
-	fmt.Println(movimiento)
+func (j *RegistroPresupuestalController) Post() {
+	var registropresupuestal models.RegistroPresupuestal
+	json.Unmarshal(j.Ctx.Input.RequestBody, &registropresupuestal)
+	fmt.Println(registropresupuestal)
 	session,_ := db.GetSession()
-	id := models.InsertMovimiento(session,movimiento)
+	id := models.InsertRegistroPresupuestal(session,registropresupuestal)
 	j.Data["json"] = id
 	j.ServeJSON()
 }
 
 // @Title Update
-// @Description update the Movimiento
+// @Description update the RegistroPresupuestal
 // @Param	objectId		path 	string	true		"The objectid you want to update"
 // @Param	body		body 	models.Object	true		"The body"
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
 // @router /:objectId [put]
-func (j *MovimientoController) Put() {
+func (j *RegistroPresupuestalController) Put() {
 	objectId := j.Ctx.Input.Param(":objectId")
 
-	var movimiento models.Movimiento
-	json.Unmarshal(j.Ctx.Input.RequestBody, &movimiento)
+	var registropresupuestal models.RegistroPresupuestal
+	json.Unmarshal(j.Ctx.Input.RequestBody, &registropresupuestal)
 	session,_ := db.GetSession()
 
-	err := models.UpdateMovimiento(session, movimiento,objectId)
+	err := models.UpdateRegistroPresupuestal(session, registropresupuestal,objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
@@ -132,23 +132,23 @@ func (j *MovimientoController) Put() {
 }
 
 // @Title Preflight options
-// @Description Crear Movimiento
-// @Param	body		body 	models.Movimiento	true		"Body para la creacion de Movimiento"
-// @Success 200 {int} Movimiento.Id
+// @Description Crear RegistroPresupuestal
+// @Param	body		body 	models.RegistroPresupuestal	true		"Body para la creacion de RegistroPresupuestal"
+// @Success 200 {int} RegistroPresupuestal.Id
 // @Failure 403 body is empty
 // @router / [options]
-func (j *MovimientoController) Options() {
+func (j *RegistroPresupuestalController) Options() {
 	j.Data["json"] = "success!"
 	j.ServeJSON()
 }
 
 // @Title Preflight options
-// @Description Crear Movimiento
-// @Param	body		body 	models.Movimiento true		"Body para la creacion de Movimiento"
-// @Success 200 {int} Movimiento.Id
+// @Description Crear RegistroPresupuestal
+// @Param	body		body 	models.RegistroPresupuestal true		"Body para la creacion de RegistroPresupuestal"
+// @Success 200 {int} RegistroPresupuestal.Id
 // @Failure 403 body is empty
 // @router /:objectId [options]
-func (j *MovimientoController) MovimientoDeleteOptions() {
+func (j *RegistroPresupuestalController) RegistroPresupuestalDeleteOptions() {
 	j.Data["json"] = "success!"
 	j.ServeJSON()
 }
