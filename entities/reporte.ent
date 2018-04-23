@@ -38,6 +38,18 @@ entity DisponibilidadApropiacion {
 }
 
 entity RegistroPresupuestal {
+  vigencia: integer
+  fecha_registro: string
+  estado: string
+  numero_registro_presupuestal: integer
+  solicitud: integer
   disponibilidad_apropiacion: DisponibilidadApropiacion
-  valor: integer
+}
+
+entity OrdenPago {
+  vigencia: integer
+  valor_base: integer
+  unidad_ejecutora: integer
+  forma_pago: integer
+  registro_presupuestal: RegistroPresupuestal
 }
