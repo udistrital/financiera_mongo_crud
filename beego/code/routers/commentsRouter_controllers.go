@@ -175,6 +175,62 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "GetAll",
+			Router: `/`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "Post",
+			Router: `/`,
+			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "Options",
+			Router: `/`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "Get",
+			Router: `/:id`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "Delete",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"delete"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "Put",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"put"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["api/controllers:OrdenPagoController"] = append(beego.GlobalControllerRouter["api/controllers:OrdenPagoController"],
+		beego.ControllerComments{
+			Method: "OrdenPagoDeleteOptions",
+			Router: `/:objectId`,
+			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
 	beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"] = append(beego.GlobalControllerRouter["api/controllers:RegistroPresupuestalController"],
 		beego.ControllerComments{
 			Method: "GetAll",

@@ -1,0 +1,54 @@
+<h3>Edici&oacute;n Ordenpago</h3>
+<p-dialog header="Ordenpago" [(visible)]="display">
+  La ordenpago ha sido editada correctamente
+  <p-footer>
+    <button type="button" pButton icon="fa-check" (click)="cerrarDialogo()" label="Cerrar"></button>
+  </p-footer>
+</p-dialog>
+<div class="ui-g">
+  <div class="ui-g-8">
+    <form class="form-horizontal">
+    <!------------------------------------------------>
+    <div class="form-group">
+      <label for="vigencia" class="col-sm-2 control-label">Vigencia </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="vigencia" placeholder="Vigencia Ordenpago" [(ngModel)]="ordenpago.vigencia" name="vigencia">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="valor_base" class="col-sm-2 control-label">Valor_base </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="valor_base" placeholder="Valor_base Ordenpago" [(ngModel)]="ordenpago.valor_base" name="valor_base">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="unidad_ejecutora" class="col-sm-2 control-label">Unidad_ejecutora </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="unidad_ejecutora" placeholder="Unidad_ejecutora Ordenpago" [(ngModel)]="ordenpago.unidad_ejecutora" name="unidad_ejecutora">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="forma_pago" class="col-sm-2 control-label">Forma_pago </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="forma_pago" placeholder="Forma_pago Ordenpago" [(ngModel)]="ordenpago.forma_pago" name="forma_pago">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="registro_presupuestal" class="col-sm-2 control-label">Registro_presupuestal </label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="registro_presupuestal" placeholder="Registro_presupuestal Ordenpago" [(ngModel)]="ordenpago.registro_presupuestal" name="registro_presupuestal">
+      </div>
+    </div>
+
+    <!------------------------------------------------>
+
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default" (click)="actualizar(ordenpago)">Actualizar</button>
+          <button type="submit" class="btn btn-default" (click)="regresar()">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

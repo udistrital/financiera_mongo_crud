@@ -10,8 +10,8 @@ export class Movimiento {
   fecha_oficio:	string;
   descripcion:	string;
   unidad_ejecutora:	int;
-  apropiacion_destino:	int;
-  apropiacion_origen:	int;
+  rubro_origen:	string;
+  rubro_destino:	string;
   valor:	int;
   tipo_movimiento:	string;
   apropiacion: Apropiacion[];
