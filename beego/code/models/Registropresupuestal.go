@@ -14,7 +14,7 @@ type RegistroPresupuestal struct {
   Vigencia int `json:"vigencia"`
   FechaRegistro string `json:"fecha_registro"`
   Estado string `json:"estado"`
-  NumeroRegistroPresupuestal int `json:"numero_registro_presupuestal"`
+  Numero_Registro_Presupuestal int `json:"numero_registro_presupuestal"`
   Solicitud int`json:"solicitud"`
   Disponibilidad_apropiacion DisponibilidadApropiacion `json:"disponibilidad_apropiacion"`
 }
