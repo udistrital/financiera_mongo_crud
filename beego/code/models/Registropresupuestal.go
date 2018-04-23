@@ -11,8 +11,12 @@ const RegistroPresupuestalCollection = "registropresupuestal"
 
 type RegistroPresupuestal struct {
 	Id bson.ObjectId `json:"_id" bson:"_id,omitempty"`
+  Vigencia int `json:"vigencia"`
+  FechaRegistro string `json:"fecha_registro"`
+  Estado string `json:"estado"`
+  NumeroRegistroPresupuestal int `json:"numero_registro_presupuestal"`
+  Solicitud int`json:"solicitud"`
   Disponibilidad_apropiacion DisponibilidadApropiacion `json:"disponibilidad_apropiacion"`
-  Valor int `json:"valor"`
 }
 
 
