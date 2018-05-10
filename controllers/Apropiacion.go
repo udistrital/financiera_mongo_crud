@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"api/db"
-	"api/models"
+	"github.com/udistrital/financiera_mongo_crud/db"
+	"github.com/udistrital/financiera_mongo_crud/models"
 	"encoding/json"
 	"errors"
 	"fmt"

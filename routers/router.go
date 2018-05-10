@@ -8,7 +8,7 @@
 package routers
 
 import (
-	"api/controllers"
+	"github.com/udistrital/financiera_mongo_crud/controllers"
 	"github.com/astaxie/beego"
 )
 

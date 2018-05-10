@@ -1,7 +1,7 @@
 package models
 
 import (
-	"api/db"
+	"github.com/udistrital/financiera_mongo_crud/db"
 	"fmt"
 "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
