@@ -9,19 +9,19 @@ import (
 	"fmt"
 )
 
-// Operaciones Crud OrdenPago
-type OrdenPagoController struct {
+// Operaciones Crud ArbolRubros
+type ArbolRubrosController struct {
 	beego.Controller
 }
 
 // @Title GetAll
 // @Description get all objects
-// @Success 200 OrdenPago models.OrdenPago
+// @Success 200 ArbolRubros models.ArbolRubros
 // @Failure 403 :objectId is empty
 // @router / [get]
-func (j *OrdenPagoController) GetAll() {
+func (j *ArbolRubrosController) GetAll() {
 	session,_ := db.GetSession()
-	obs := models.GetAllOrdenPagos(session)
+	obs := models.GetAllArbolRubross(session)
 
   if len(obs) == 0 {
 		j.Data["json"] = []string{}
@@ -33,70 +33,70 @@ func (j *OrdenPagoController) GetAll() {
 }
 
 // @Title Get
-// @Description get OrdenPago by nombre
-// @Param	nombre		path 	string	true		"El nombre de la OrdenPago a consultar"
-// @Success 200 {object} models.OrdenPago
+// @Description get ArbolRubros by nombre
+// @Param	nombre		path 	string	true		"El nombre de la ArbolRubros a consultar"
+// @Success 200 {object} models.ArbolRubros
 // @Failure 403 :uid is empty
 // @router /:id [get]
-func (j *OrdenPagoController) Get() {
+func (j *ArbolRubrosController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		ordenpago, err := models.GetOrdenPagoById(session,id)
+		arbolrubros, err := models.GetArbolRubrosById(session,id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
-			j.Data["json"] = ordenpago
+			j.Data["json"] = arbolrubros
 		}
 	}
 	j.ServeJSON()
 }
 
-// @Title Borrar OrdenPago
-// @Description Borrar OrdenPago
+// @Title Borrar ArbolRubros
+// @Description Borrar ArbolRubros
 // @Param	objectId		path 	string	true		"El ObjectId del objeto que se quiere borrar"
 // @Success 200 {string} ok
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
-func (j *OrdenPagoController) Delete() {
+func (j *ArbolRubrosController) Delete() {
 	session,_ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteOrdenPagoById(session,objectId)
+	result, _ := models.DeleteArbolRubrosById(session,objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
 
-// @Title Crear OrdenPago
-// @Description Crear OrdenPago
-// @Param	body		body 	models.OrdenPago	true		"Body para la creacion de OrdenPago"
-// @Success 200 {int} OrdenPago.Id
+// @Title Crear ArbolRubros
+// @Description Crear ArbolRubros
+// @Param	body		body 	models.ArbolRubros	true		"Body para la creacion de ArbolRubros"
+// @Success 200 {int} ArbolRubros.Id
 // @Failure 403 body is empty
 // @router / [post]
-func (j *OrdenPagoController) Post() {
-	var ordenpago models.OrdenPago
-	json.Unmarshal(j.Ctx.Input.RequestBody, &ordenpago)
-	fmt.Println(ordenpago)
+func (j *ArbolRubrosController) Post() {
+	var arbolrubros models.ArbolRubros
+	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
+	fmt.Println(arbolrubros)
 	session,_ := db.GetSession()
-	models.InsertOrdenPago(session,ordenpago)
+	models.InsertArbolRubros(session,arbolrubros)
 	j.Data["json"] = "insert success!"
 	j.ServeJSON()
 }
 
 // @Title Update
-// @Description update the OrdenPago
+// @Description update the ArbolRubros
 // @Param	objectId		path 	string	true		"The objectid you want to update"
 // @Param	body		body 	models.Object	true		"The body"
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
 // @router /:objectId [put]
-func (j *OrdenPagoController) Put() {
+func (j *ArbolRubrosController) Put() {
 	objectId := j.Ctx.Input.Param(":objectId")
 
-	var ordenpago models.OrdenPago
-	json.Unmarshal(j.Ctx.Input.RequestBody, &ordenpago)
+	var arbolrubros models.ArbolRubros
+	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
 	session,_ := db.GetSession()
 
-	err := models.UpdateOrdenPago(session, ordenpago,objectId)
+	err := models.UpdateArbolRubros(session, arbolrubros,objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
@@ -106,23 +106,23 @@ func (j *OrdenPagoController) Put() {
 }
 
 // @Title Preflight options
-// @Description Crear OrdenPago
-// @Param	body		body 	models.OrdenPago	true		"Body para la creacion de OrdenPago"
-// @Success 200 {int} OrdenPago.Id
+// @Description Crear ArbolRubros
+// @Param	body		body 	models.ArbolRubros	true		"Body para la creacion de ArbolRubros"
+// @Success 200 {int} ArbolRubros.Id
 // @Failure 403 body is empty
 // @router / [options]
-func (j *OrdenPagoController) Options() {
+func (j *ArbolRubrosController) Options() {
 	j.Data["json"] = "success!"
 	j.ServeJSON()
 }
 
 // @Title Preflight options
-// @Description Crear OrdenPago
-// @Param	body		body 	models.OrdenPago true		"Body para la creacion de OrdenPago"
-// @Success 200 {int} OrdenPago.Id
+// @Description Crear ArbolRubros
+// @Param	body		body 	models.ArbolRubros true		"Body para la creacion de ArbolRubros"
+// @Success 200 {int} ArbolRubros.Id
 // @Failure 403 body is empty
 // @router /:objectId [options]
-func (j *OrdenPagoController) OrdenPagoDeleteOptions() {
+func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 	j.Data["json"] = "success!"
 	j.ServeJSON()
 }

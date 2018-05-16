@@ -1,4 +1,8 @@
 .DS_Store
+api
+api~
+api.exe
+api.exe~
 financiera_mongo_crud
 financiera_mongo_crud~
 financiera_mongo_crud.exe
