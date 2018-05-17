@@ -7,7 +7,7 @@ import (
 
 func init() {
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "GetAll",
 			Router: `/`,
@@ -15,7 +15,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "Post",
 			Router: `/`,
@@ -23,7 +23,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "Options",
 			Router: `/`,
@@ -31,7 +31,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "Get",
 			Router: `/:id`,
@@ -39,7 +39,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "Delete",
 			Router: `/:objectId`,
@@ -47,7 +47,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "Put",
 			Router: `/:objectId`,
@@ -55,7 +55,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:AgendaController"] = append(beego.GlobalControllerRouter["api/controllers:AgendaController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:AgendaController"],
 		beego.ControllerComments{
 			Method: "AgendaDeleteOptions",
 			Router: `/:objectId`,
@@ -63,7 +63,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "GetAll",
 			Router: `/`,
@@ -71,7 +71,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "Post",
 			Router: `/`,
@@ -79,7 +79,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "Options",
 			Router: `/`,
@@ -87,7 +87,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "Get",
 			Router: `/:id`,
@@ -95,7 +95,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "Delete",
 			Router: `/:objectId`,
@@ -103,7 +103,7 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "Put",
 			Router: `/:objectId`,
@@ -111,11 +111,19 @@ func init() {
 			MethodParams: param.Make(),
 			Params: nil})
 
-	beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["api/controllers:ArbolRubrosController"],
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
 		beego.ControllerComments{
 			Method: "ArbolRubrosDeleteOptions",
 			Router: `/:objectId`,
 			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubrosController"],
+		beego.ControllerComments{
+			Method: "RegistrarRubro",
+			Router: `/registrarRubro`,
+			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})
 

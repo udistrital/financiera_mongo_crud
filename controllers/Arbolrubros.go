@@ -126,3 +126,18 @@ func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 	j.Data["json"] = "success!"
 	j.ServeJSON()
 }
+
+// @Title Registra rubro
+// @Description Convierte la estructura del api crud para registrarla en un documento mongo
+// @Param	body		interface{}	true		"Body para la creacion de un nuevo rubro"
+// @Success 201 {string} recibido
+// @Failure 403 body is empty
+// @router /registrarRubro [post]
+func (j *ArbolRubrosController) RegistrarRubro() {
+  var rubroData interface{}
+  //session := db.GetSession
+  json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
+	fmt.Println(rubroData)
+  j.Data["json"] = "recibido"
+  j.ServeJSON()
+}
