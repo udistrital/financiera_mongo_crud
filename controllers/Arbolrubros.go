@@ -1,12 +1,14 @@
 package controllers
 
 import (
-  "github.com/udistrital/financiera_mongo_crud/db"
-	"github.com/udistrital/financiera_mongo_crud/models"
-	"github.com/astaxie/beego"
 	"encoding/json"
-	_ "gopkg.in/mgo.v2"
 	"fmt"
+	"reflect"
+
+	"github.com/astaxie/beego"
+	"github.com/udistrital/financiera_mongo_crud/db"
+	"github.com/udistrital/financiera_mongo_crud/models"
+	_ "gopkg.in/mgo.v2"
 )
 
 // Operaciones Crud ArbolRubros
@@ -20,10 +22,10 @@ type ArbolRubrosController struct {
 // @Failure 403 :objectId is empty
 // @router / [get]
 func (j *ArbolRubrosController) GetAll() {
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 	obs := models.GetAllArbolRubross(session)
 
-  if len(obs) == 0 {
+	if len(obs) == 0 {
 		j.Data["json"] = []string{}
 	} else {
 		j.Data["json"] = &obs
@@ -42,7 +44,7 @@ func (j *ArbolRubrosController) Get() {
 	id := j.GetString(":id")
 	session, _ := db.GetSession()
 	if id != "" {
-		arbolrubros, err := models.GetArbolRubrosById(session,id)
+		arbolrubros, err := models.GetArbolRubrosById(session, id)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
@@ -59,9 +61,9 @@ func (j *ArbolRubrosController) Get() {
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
 func (j *ArbolRubrosController) Delete() {
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteArbolRubrosById(session,objectId)
+	result, _ := models.DeleteArbolRubrosById(session, objectId)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
@@ -76,8 +78,8 @@ func (j *ArbolRubrosController) Post() {
 	var arbolrubros models.ArbolRubros
 	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
 	fmt.Println(arbolrubros)
-	session,_ := db.GetSession()
-	models.InsertArbolRubros(session,arbolrubros)
+	session, _ := db.GetSession()
+	models.InsertArbolRubros(session, arbolrubros)
 	j.Data["json"] = "insert success!"
 	j.ServeJSON()
 }
@@ -94,9 +96,9 @@ func (j *ArbolRubrosController) Put() {
 
 	var arbolrubros models.ArbolRubros
 	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
-	session,_ := db.GetSession()
+	session, _ := db.GetSession()
 
-	err := models.UpdateArbolRubros(session, arbolrubros,objectId)
+	err := models.UpdateArbolRubros(session, arbolrubros, objectId)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
@@ -134,10 +136,29 @@ func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 // @Failure 403 body is empty
 // @router /registrarRubro [post]
 func (j *ArbolRubrosController) RegistrarRubro() {
-  var rubroData interface{}
-  //session := db.GetSession
-  json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
-	fmt.Println(rubroData)
-  j.Data["json"] = "recibido"
-  j.ServeJSON()
+	var rubroData interface{}
+	var rubroPadre string = ""
+	session, _ := db.GetSession()
+	json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
+	beego.Info("rubroData: ", rubroData)
+
+	rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
+
+	if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre != nil {
+		rubroPadre = rubroDataPadre["Codigo"].(string)
+	}
+
+	nuevoRubro := models.ArbolRubros{
+		Id:          rubroDataHijo["Codigo"].(string),
+		Idpsql:      -1,
+		Nombre:      rubroDataHijo["Nombre"].(string),
+		Descripcion: rubroDataHijo["Descripcion"].(string),
+		Hijos:       nil,
+		Padre:       rubroPadre}
+
+	models.InsertArbolRubros(session, nuevoRubro)
+	beego.Info(nuevoRubro)
+	beego.Info(reflect.TypeOf(rubroData))
+	j.Data["json"] = "recibido"
+	j.ServeJSON()
 }
