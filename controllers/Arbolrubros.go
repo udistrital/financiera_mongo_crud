@@ -3,9 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 
 	"github.com/astaxie/beego"
+	"github.com/manucorporat/try"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"github.com/udistrital/financiera_mongo_crud/models"
 	_ "gopkg.in/mgo.v2"
@@ -136,29 +136,122 @@ func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 // @Failure 403 body is empty
 // @router /registrarRubro [post]
 func (j *ArbolRubrosController) RegistrarRubro() {
-	var rubroData interface{}
-	var rubroPadre string = ""
+
+	try.This(func() {
+		var (
+			rubroData  interface{}
+			rubroPadre string = ""
+			err        error
+		)
+		session, _ := db.GetSession()
+		json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
+		beego.Info("rubroData: ", rubroData)
+		rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
+
+		nuevoRubro := models.ArbolRubros{
+			Id:          rubroDataHijo["Codigo"].(string),
+			Idpsql:      -1,
+			Nombre:      rubroDataHijo["Nombre"].(string),
+			Descripcion: rubroDataHijo["Descripcion"].(string),
+			Hijos:       nil}
+
+		if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre["Codigo"] != nil {
+			rubroPadre = rubroDataPadre["Codigo"].(string)
+			nuevoRubro.Padre = rubroPadre
+			updatedRubro, _ := models.GetArbolRubrosById(session, rubroPadre)
+			beego.Info(updatedRubro)
+			updatedRubro.Hijos = append(updatedRubro.Hijos, rubroDataHijo["Codigo"].(string))
+			//err = models.UpdateArbolRubros(updateRubro)
+			session, _ = db.GetSession()
+			err = models.RubroTransacton(updatedRubro, nuevoRubro, session)
+		} else {
+			err = models.InsertArbolRubros(session, nuevoRubro)
+		}
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		// beego.Info(nuevoRubro)
+		// beego.Info(reflect.TypeOf(rubroData))
+		if err != nil {
+			panic(err.Error())
+		} else {
+			j.Data["json"] = map[string]interface{}{"Type": "sucess"}
+		}
+	}).Catch(func(e try.E) {
+		beego.Error(e)
+		j.Data["json"] = map[string]interface{}{"Type": "error"}
+	})
+
+	j.ServeJSON()
+}
+
+// @Title Preflight options
+// @Description Test
+// @Param none
+// @Success 200 {object} models.Object
+// @Failure 404 body is empty
+// @router /test [get]
+/*func (j *ArbolRubrosController) Get() {
+}*/
+
+// @Title Preflight options
+// @Description Arbol Rubros
+// @Param body body models.Rubro true "Body para la creacion de Rubro"
+// @Success 200 {object} models.Object
+// @Failure 404 body is empty
+// @router /ArbolRubro/:raiz [get]
+func (j *ArbolRubrosController) ArbolRubro() {
+	beego.Info("Entró a arbol rubro")
+	nodoRaiz := j.GetString(":raiz")
 	session, _ := db.GetSession()
-	json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
-	beego.Info("rubroData: ", rubroData)
+	var arbolRubrosGrande []map[string]interface{}
+	raiz, err := models.GetNodo(session, nodoRaiz)
+	if err == nil {
 
-	rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
+		arbolRubros := make(map[string]interface{})
+		arbolRubros["codigo"] = raiz.Id
+		arbolRubros["nombre"] = raiz.Nombre
+		var hijos []interface{}
+		for j := 0; j < len(raiz.Hijos); j++ {
+			hijo := GetHijoRubro(raiz.Hijos[j])
+			if len(hijo) > 0 {
+				hijos = append(hijos, hijo)
+			}
+		}
+		arbolRubros["hijos"] = hijos
+		arbolRubrosGrande = append(arbolRubrosGrande, arbolRubros)
 
-	if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre != nil {
-		rubroPadre = rubroDataPadre["Codigo"].(string)
+		j.Data["json"] = arbolRubrosGrande
+	} else {
+		j.Data["json"] = err
 	}
 
-	nuevoRubro := models.ArbolRubros{
-		Id:          rubroDataHijo["Codigo"].(string),
-		Idpsql:      -1,
-		Nombre:      rubroDataHijo["Nombre"].(string),
-		Descripcion: rubroDataHijo["Descripcion"].(string),
-		Hijos:       nil,
-		Padre:       rubroPadre}
-
-	models.InsertArbolRubros(session, nuevoRubro)
-	beego.Info(nuevoRubro)
-	beego.Info(reflect.TypeOf(rubroData))
-	j.Data["json"] = "recibido"
 	j.ServeJSON()
+}
+
+func GetHijoRubro(id string) map[string]interface{} {
+	beego.Info(id)
+	session, _ := db.GetSession()
+	rubroHijo, _ := models.GetNodo(session, id)
+	hijo := make(map[string]interface{})
+
+	if rubroHijo.Id != "" {
+		beego.Info("codigo rubro hijo: ", rubroHijo.Id)
+		hijo["id"] = rubroHijo.Id
+		hijo["codigo"] = rubroHijo.Nombre
+
+		if len(rubroHijo.Hijos) == 0 {
+			hijo["hijos"] = nil
+			return hijo
+		} else {
+			var hijos []interface{}
+			for i := 0; i < len(rubroHijo.Hijos); i++ {
+				hijos = append(hijos, GetHijoRubro(rubroHijo.Hijos[i]))
+			}
+			hijo["hijos"] = hijos
+		}
+	}
+	return hijo
 }

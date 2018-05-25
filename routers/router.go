@@ -8,22 +8,22 @@
 package routers
 
 import (
-	"github.com/udistrital/financiera_mongo_crud/controllers"
 	"github.com/astaxie/beego"
+	"github.com/udistrital/financiera_mongo_crud/controllers"
 )
 
 func init() {
 	ns := beego.NewNamespace("/v1",
-  beego.NSNamespace("/agenda",
-	    beego.NSInclude(
-	      &controllers.AgendaController{},
-	    ),
-   ),
-  beego.NSNamespace("/arbolrubros",
-	    beego.NSInclude(
-	      &controllers.ArbolRubrosController{},
-	    ),
-   ),
+		beego.NSNamespace("/agenda",
+			beego.NSInclude(
+				&controllers.AgendaController{},
+			),
+		),
+		beego.NSNamespace("/arbol_rubro",
+			beego.NSInclude(
+				&controllers.ArbolRubrosController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

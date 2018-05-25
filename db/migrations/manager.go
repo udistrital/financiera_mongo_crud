@@ -1,18 +1,19 @@
 package migrations
 
 import (
-	"io/ioutil"
-	"fmt"
 	"encoding/json"
-	"api/models"
+	"fmt"
+	"io/ioutil"
 	"path/filepath"
-	"api/db"
 	"reflect"
+
+	"github.com/udistrital/financiera_mongo_crud/db"
+	"github.com/udistrital/financiera_mongo_crud/models"
 )
 
 func MigrateJSON(file string, obj interface{}) string {
 
-	f,_:= filepath.Abs("./db/migrations/"+file+".json")
+	f, _ := filepath.Abs("./db/migrations/" + file + ".json")
 	raw, _ := ioutil.ReadFile(f)
 
 	if reflect.TypeOf(obj) == reflect.TypeOf(models.Jornada{}) {
@@ -25,7 +26,7 @@ func MigrateJSON(file string, obj interface{}) string {
 		for k := range jornadas {
 			session, _ := db.GetSession()
 			jornada := jornadas[k]
-			models.InsertJornada(session,jornada)
+			models.InsertJornada(session, jornada)
 			fmt.Println("Insert Jornada with name: " + jornada.Nombre)
 		}
 		return "jornadas migrated"
@@ -41,7 +42,7 @@ func MigrateJSON(file string, obj interface{}) string {
 		for k := range candidatos {
 			session, _ := db.GetSession()
 			candidato := candidatos[k]
-			models.InsertCandidato(session,candidato)
+			models.InsertCandidato(session, candidato)
 			fmt.Println("Insert Candidato with name: " + candidato.Nombre)
 		}
 		return "candidatos migrated"
