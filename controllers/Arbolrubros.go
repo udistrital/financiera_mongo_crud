@@ -213,9 +213,9 @@ func (j *ArbolRubrosController) RaicesArbol() {
 	session, _ := db.GetSession()
 	rubros, err := models.GetRaices(session)
 	if err != nil {
-		j.Data["json"] = rubros
-	} else {
 		j.Data["json"] = err
+	} else {
+		j.Data["json"] = rubros
 	}
 
 	j.ServeJSON()
