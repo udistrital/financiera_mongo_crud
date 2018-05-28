@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
@@ -148,7 +149,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 
 		nuevoRubro := models.ArbolRubros{
 			Id:          rubroDataHijo["Codigo"].(string),
-			Idpsql:      -1,
+			Idpsql:      "-1",
 			Nombre:      rubroDataHijo["Nombre"].(string),
 			Descripcion: rubroDataHijo["Descripcion"].(string),
 			Hijos:       nil}
@@ -236,8 +237,9 @@ func (j *ArbolRubrosController) ArbolRubro() {
 	if err == nil {
 
 		arbolRubros := make(map[string]interface{})
-		arbolRubros["codigo"] = raiz.Id
-		arbolRubros["nombre"] = raiz.Nombre
+		arbolRubros["Id"], _ = strconv.Atoi(raiz.Idpsql)
+		arbolRubros["Codigo"] = raiz.Id
+		arbolRubros["Nombre"] = raiz.Nombre
 		var hijos []interface{}
 		for j := 0; j < len(raiz.Hijos); j++ {
 			hijo := GetHijoRubro(raiz.Hijos[j])
@@ -245,7 +247,7 @@ func (j *ArbolRubrosController) ArbolRubro() {
 				hijos = append(hijos, hijo)
 			}
 		}
-		arbolRubros["hijos"] = hijos
+		arbolRubros["Hijos"] = hijos
 		arbolRubrosGrande = append(arbolRubrosGrande, arbolRubros)
 
 		j.Data["json"] = arbolRubrosGrande
@@ -263,20 +265,21 @@ func GetHijoRubro(id string) map[string]interface{} {
 	hijo := make(map[string]interface{})
 
 	if rubroHijo.Id != "" {
-		beego.Info("codigo rubro hijo: ", rubroHijo.Id)
-		hijo["id"] = rubroHijo.Id
-		hijo["codigo"] = rubroHijo.Nombre
-
+		beego.Info("codigo rubro hijo: ", rubroHijo)
+		hijo["Id"], _ = strconv.Atoi(rubroHijo.Idpsql)
+		hijo["Codigo"] = rubroHijo.Id
+		hijo["Nombre"] = rubroHijo.Nombre
 		if len(rubroHijo.Hijos) == 0 {
-			hijo["hijos"] = nil
+			hijo["Hijos"] = nil
 			return hijo
-		} else {
-			var hijos []interface{}
-			for i := 0; i < len(rubroHijo.Hijos); i++ {
-				hijos = append(hijos, GetHijoRubro(rubroHijo.Hijos[i]))
-			}
-			hijo["hijos"] = hijos
 		}
+		// } else {
+		// 	/*var hijos []interface{}*/
+		// 	/*for i := 0; i < len(rubroHijo.Hijos); i++ {
+		// 		hijos = append(hijos, GetHijoRubro(rubroHijo.Hijos[i]))
+		// 	}*/
+		// 	hijo["hijos"] = hijos
+		// }
 	}
 	return hijo
 }

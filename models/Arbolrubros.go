@@ -14,7 +14,7 @@ const ArbolRubrosCollection = "arbol_rubro"
 
 type ArbolRubros struct {
 	Id          string   `json:"_id" bson:"_id,omitempty"`
-	Idpsql      int      `json:"idpsql"`
+	Idpsql      string   `json:"idpsql"`
 	Nombre      string   `json:"nombre"`
 	Descripcion string   `json:"descripcion"`
 	Hijos       []string `json:"hijos"`
