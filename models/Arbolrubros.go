@@ -102,7 +102,7 @@ func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
 	)
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
-	err := c.Find(bson.M{"padre": ""}).All(&roots)
+	err := c.Find(bson.M{"padre": nil}).All(&roots)
 	fmt.Println("rubros models: ", roots)
 	return roots, err
 }
