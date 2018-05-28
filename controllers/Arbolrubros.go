@@ -130,13 +130,12 @@ func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 }
 
 // @Title Registra rubro
-// @Description Convierte la estructura del api crud para registrarla en un documento mongo
+// @Description Convierte la estructura del api mid para registrarla en un documento mongo
 // @Param	body		interface{}	true		"Body para la creacion de un nuevo rubro"
 // @Success 201 {string} recibido
 // @Failure 403 body is empty
 // @router /registrarRubro [post]
 func (j *ArbolRubrosController) RegistrarRubro() {
-
 	try.This(func() {
 		var (
 			rubroData  interface{}
@@ -145,7 +144,6 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 		)
 		session, _ := db.GetSession()
 		json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
-		beego.Info("rubroData: ", rubroData)
 		rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
 
 		nuevoRubro := models.ArbolRubros{
@@ -159,9 +157,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 			rubroPadre = rubroDataPadre["Codigo"].(string)
 			nuevoRubro.Padre = rubroPadre
 			updatedRubro, _ := models.GetArbolRubrosById(session, rubroPadre)
-			beego.Info(updatedRubro)
 			updatedRubro.Hijos = append(updatedRubro.Hijos, rubroDataHijo["Codigo"].(string))
-			//err = models.UpdateArbolRubros(updateRubro)
 			session, _ = db.GetSession()
 			err = models.RubroTransacton(updatedRubro, nuevoRubro, session)
 		} else {
@@ -172,8 +168,6 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 			panic(err.Error())
 		}
 
-		// beego.Info(nuevoRubro)
-		// beego.Info(reflect.TypeOf(rubroData))
 		if err != nil {
 			panic(err.Error())
 		} else {
@@ -187,14 +181,45 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 	j.ServeJSON()
 }
 
-// @Title Preflight options
-// @Description Test
-// @Param none
+/*
+// @Title Eliminar rubro
+// @Description Convierte la estructura del api mid para eliminar el rubro
+// @Param	body		interface{}	true		"Body para la eliminación de un rubro"
+// @Success 201 {string} sucess
+// @Failure 403 body is empty
+// @router /eliminarRubro [post]
+func (j *ArbolRubrosController) EliminarRubro() {
+	try.This(func() {
+		session, _ := db.GetSession()
+		var (
+			rubroData interface{}
+			err       error
+		)
+		json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
+		beego.Info(rubroData)
+	}).Catch(func(e try.E) {
+		beego.Error(e)
+		j.Data["json"] = map[string]interface{}{"Type": "error"}
+	})
+}*/
+
+// @Title RaicesArbol
+// @Description RaicesArbol
+// @Param body body models.Rubro true "Body para la creacion de Rubro"
 // @Success 200 {object} models.Object
 // @Failure 404 body is empty
-// @router /test [get]
-/*func (j *ArbolRubrosController) Get() {
-}*/
+// @router /RaicesArbol [get]
+func (j *ArbolRubrosController) RaicesArbol() {
+	session, _ := db.GetSession()
+	rubros, err := models.GetRaices(session)
+	if err != nil {
+		j.Data["json"] = rubros
+	} else {
+		j.Data["json"] = err
+	}
+
+	j.ServeJSON()
+}
 
 // @Title Preflight options
 // @Description Arbol Rubros

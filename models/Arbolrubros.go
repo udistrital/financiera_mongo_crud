@@ -95,3 +95,18 @@ func RubroTransacton(rubroPadre, rubroHijo ArbolRubros, session *mgo.Session) er
 	err := runner.Run(ops, id, nil)
 	return err
 }
+
+func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
+	var (
+		rubroGastos    ArbolRubros
+		rubroInversion ArbolRubros
+		rubros         []ArbolRubros
+	)
+	c := db.Cursor(session, ArbolRubrosCollection)
+	defer session.Close()
+	err := c.Find(bson.M{"_id": "3"}).One(&rubroGastos)
+	err = c.Find(bson.M{"_id": "2"}).One(&rubroInversion)
+	rubros = append(rubros, rubroGastos, rubroInversion)
+	fmt.Println("rubros models: ", rubros)
+	return rubros, err
+}
