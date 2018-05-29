@@ -31,7 +31,7 @@ func GetSession() (*mgo.Session, error) {
 		Password: mongoPassword,
 	}
 
-	beego.Info("mongoHost: ", mongoHost, "mongoUser: ", mongoUser, "mongoPassword: ", mongoPassword, "mongoDatabase: ", mongoDatabase)
+	// beego.Info("mongoHost: ", mongoHost, "mongoUser: ", mongoUser, "mongoPassword: ", mongoPassword, "mongoDatabase: ", mongoDatabase)
 
 	session, err := mgo.DialWithInfo(info)
 	if err != nil {

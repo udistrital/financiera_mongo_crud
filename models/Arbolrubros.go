@@ -13,12 +13,13 @@ import (
 const ArbolRubrosCollection = "arbol_rubro"
 
 type ArbolRubros struct {
-	Id          string   `json:"_id" bson:"_id,omitempty"`
-	Idpsql      string   `json:"idpsql"`
-	Nombre      string   `json:"nombre"`
-	Descripcion string   `json:"descripcion"`
-	Hijos       []string `json:"hijos"`
-	Padre       string   `json:"padre"`
+	Id              string   `json:"_id" bson:"_id,omitempty"`
+	Idpsql          string   `json:"idpsql"`
+	Nombre          string   `json:"nombre"`
+	Descripcion     string   `json:"descripcion"`
+	Hijos           []string `json:"hijos"`
+	Padre           string   `json:"padre"`
+	UnidadEjecutora string   `json:"unidad_ejecutora"`
 }
 
 func UpdateArbolRubros(session *mgo.Session, j ArbolRubros, id string) error {
@@ -30,7 +31,6 @@ func UpdateArbolRubros(session *mgo.Session, j ArbolRubros, id string) error {
 		panic(err)
 	}
 	return err
-
 }
 
 func InsertArbolRubros(session *mgo.Session, j ArbolRubros) error {
@@ -40,12 +40,12 @@ func InsertArbolRubros(session *mgo.Session, j ArbolRubros) error {
 	return err
 }
 
-func GetAllArbolRubross(session *mgo.Session) []ArbolRubros {
+func GetAllArbolRubross(session *mgo.Session, query map[string]interface{}) []ArbolRubros {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
 	fmt.Println("Getting all arbolrubross")
 	var arbolrubross []ArbolRubros
-	err := c.Find(bson.M{}).All(&arbolrubross)
+	err := c.Find(query).All(&arbolrubross)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -67,6 +67,14 @@ func DeleteArbolRubrosById(session *mgo.Session, id string) (string, error) {
 	return "ok", err
 }
 
+func GetArbolRubrosByIdPsql(session *mgo.Session, idPsql string) (ArbolRubros, error) {
+	c := db.Cursor(session, ArbolRubrosCollection)
+	defer session.Close()
+	var rubro ArbolRubros
+	err := c.Find(bson.M{"idpsql": idPsql}).One(&rubro)
+	return rubro, err
+}
+
 func GetNodo(session *mgo.Session, id string) (ArbolRubros, error) {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
@@ -75,11 +83,9 @@ func GetNodo(session *mgo.Session, id string) (ArbolRubros, error) {
 	return nodo, err
 }
 
-func RubroTransacton(rubroPadre, rubroHijo ArbolRubros, session *mgo.Session) error {
+func RegistrarRubroTransacton(rubroPadre, rubroHijo ArbolRubros, session *mgo.Session) error {
 	c := db.Cursor(session, ArbolRubrosCollection)
-	beego.Info(rubroPadre.Id)
 	runner := txn.NewRunner(c)
-	beego.Error("error 0")
 	ops := []txn.Op{{
 		C:      ArbolRubrosCollection,
 		Id:     rubroHijo.Id,
@@ -96,6 +102,25 @@ func RubroTransacton(rubroPadre, rubroHijo ArbolRubros, session *mgo.Session) er
 	return err
 }
 
+func EliminarRubroTransaccion(rubroPadre, rubroHijo ArbolRubros, session *mgo.Session) error {
+	c := db.Cursor(session, ArbolRubrosCollection)
+	runner := txn.NewRunner(c)
+	ops := []txn.Op{{
+		C:      ArbolRubrosCollection,
+		Id:     rubroHijo.Id,
+		Assert: "d+",
+		Remove: true,
+	}, {
+		C:      ArbolRubrosCollection,
+		Id:     rubroPadre.Id,
+		Assert: "d+",
+		Update: bson.D{{"$set", bson.D{{"hijos", rubroPadre.Hijos}}}},
+	}}
+	id := bson.NewObjectId()
+	err := runner.Run(ops, id, nil)
+	return err
+}
+
 func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
 	var (
 		roots []ArbolRubros
@@ -103,6 +128,6 @@ func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
 	err := c.Find(bson.M{"padre": nil}).All(&roots)
-	fmt.Println("rubros models: ", roots)
+	beego.Info("roots: ", roots)
 	return roots, err
 }
