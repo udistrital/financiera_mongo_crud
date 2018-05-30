@@ -256,11 +256,35 @@ func remove(slice []string, object string) []string {
 // @router /RaicesArbol [get]
 func (j *ArbolRubrosController) RaicesArbol() {
 	session, _ := db.GetSession()
+	var roots []map[string]interface{}
 	rubros, err := models.GetRaices(session)
+	for i := 0; i < len(rubros); i++ {
+		idPsql, _ := strconv.Atoi(rubros[i].Idpsql)
+		root := map[string]interface{}{
+			"Id":     idPsql,
+			"Codigo": rubros[i].Id,
+			"Nombre": rubros[i].Nombre,
+			"Hijos":  rubros[i].Hijos,
+			"IsLeaf": true,
+		}
+		if len(rubros[i].Hijos) > 0 {
+			var hijos []map[string]interface{}
+			root["IsLeaf"] = false
+			for j := 0; j < len(root["Hijos"].([]string)); j++ {
+				hijo := GetHijoRubro(root["Hijos"].([]string)[j])
+				if len(hijo) > 0 {
+					hijos = append(hijos, hijo)
+				}
+			}
+			root["Hijos"] = hijos
+		}
+		roots = append(roots, root)
+	}
+
 	if err != nil {
 		j.Data["json"] = err
 	} else {
-		j.Data["json"] = rubros
+		j.Data["json"] = roots
 	}
 
 	j.ServeJSON()
@@ -283,10 +307,12 @@ func (j *ArbolRubrosController) ArbolRubro() {
 		arbolRubros["Id"], _ = strconv.Atoi(raiz.Idpsql)
 		arbolRubros["Codigo"] = raiz.Id
 		arbolRubros["Nombre"] = raiz.Nombre
+		arbolRubros["IsLeaf"] = true
 		var hijos []interface{}
 		for j := 0; j < len(raiz.Hijos); j++ {
 			hijo := GetHijoRubro(raiz.Hijos[j])
 			if len(hijo) > 0 {
+				arbolRubros["IsLeaf"] = false
 				hijos = append(hijos, hijo)
 			}
 		}
@@ -310,7 +336,9 @@ func GetHijoRubro(id string) map[string]interface{} {
 		hijo["Id"], _ = strconv.Atoi(rubroHijo.Idpsql)
 		hijo["Codigo"] = rubroHijo.Id
 		hijo["Nombre"] = rubroHijo.Nombre
+		hijo["IsLeaf"] = false
 		if len(rubroHijo.Hijos) == 0 {
+			hijo["IsLeaf"] = true
 			hijo["Hijos"] = nil
 			return hijo
 		}

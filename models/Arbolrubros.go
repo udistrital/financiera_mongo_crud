@@ -127,7 +127,7 @@ func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
 	)
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
-	err := c.Find(bson.M{"padre": nil}).All(&roots)
+	err := c.Find(bson.M{"padre": nil, "idpsql": bson.M{"$ne": nil}}).All(&roots)
 	beego.Info("roots: ", roots)
 	return roots, err
 }
