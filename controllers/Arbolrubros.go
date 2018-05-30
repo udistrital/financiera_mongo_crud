@@ -173,7 +173,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 
 		nuevoRubro := models.ArbolRubros{
 			Id:          rubroDataHijo["Codigo"].(string),
-			Idpsql:      "-1",
+			Idpsql:      strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 6, 64),
 			Nombre:      rubroDataHijo["Nombre"].(string),
 			Descripcion: rubroDataHijo["Descripcion"].(string),
 			Hijos:       nil}
