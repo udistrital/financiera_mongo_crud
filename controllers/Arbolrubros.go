@@ -173,7 +173,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 
 		nuevoRubro := models.ArbolRubros{
 			Id:          rubroDataHijo["Codigo"].(string),
-			Idpsql:      strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 6, 64),
+			Idpsql:      strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 0, 64),
 			Nombre:      rubroDataHijo["Nombre"].(string),
 			Descripcion: rubroDataHijo["Descripcion"].(string),
 			Hijos:       nil}
@@ -207,7 +207,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 // @Param	body		interface{}	true		"Body para la eliminación de un rubro"
 // @Success 201 {string} sucess
 // @Failure 403 body is empty
-// @router /eliminarRubro/:idPsql [get]
+// @router /eliminarRubro/:idPsql [delete]
 func (j *ArbolRubrosController) EliminarRubro() {
 	try.This(func() {
 		session, _ := db.GetSession()
@@ -236,6 +236,7 @@ func (j *ArbolRubrosController) EliminarRubro() {
 		beego.Error(e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
+	j.ServeJSON()
 }
 
 func remove(slice []string, object string) []string {
