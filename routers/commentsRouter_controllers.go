@@ -139,7 +139,7 @@ func init() {
 		beego.ControllerComments{
 			Method: "EliminarRubro",
 			Router: `/eliminarRubro/:idPsql`,
-			AllowHTTPMethods: []string{"get"},
+			AllowHTTPMethods: []string{"delete"},
 			MethodParams: param.Make(),
 			Params: nil})
 
