@@ -63,7 +63,7 @@ func GetArbolRubrosById(session *mgo.Session, id string) (ArbolRubros, error) {
 func DeleteArbolRubrosById(session *mgo.Session, id string) (string, error) {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
-	err := c.RemoveId(bson.ObjectIdHex(id))
+	err := c.Remove(bson.M{"_id": id})
 	return "ok", err
 }
 
