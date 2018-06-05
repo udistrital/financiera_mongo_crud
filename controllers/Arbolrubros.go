@@ -220,12 +220,16 @@ func (j *ArbolRubrosController) EliminarRubro() {
 		rubroHijo, _ := models.GetArbolRubrosByIdPsql(session, rubroIdPsql)
 		beego.Info("rubroHijo: ", rubroHijo)
 		session, _ = db.GetSession()
-		rubroPadre, _ := models.GetArbolRubrosById(session, rubroHijo.Padre)
-		beego.Info("rubroPadre sin modificar: ", rubroPadre)
-		rubroPadre.Hijos = remove(rubroPadre.Hijos, rubroHijo.Id)
-		beego.Info("rubroPadre modificado: ", rubroPadre)
-		session, _ = db.GetSession()
-		err = models.EliminarRubroTransaccion(rubroPadre, rubroHijo, session)
+		if rubroHijo.Padre != "" {
+			rubroPadre, _ := models.GetArbolRubrosById(session, rubroHijo.Padre)
+			beego.Info("rubroPadre sin modificar: ", rubroPadre)
+			rubroPadre.Hijos = remove(rubroPadre.Hijos, rubroHijo.Id)
+			beego.Info("rubroPadre modificado: ", rubroPadre)
+			session, _ = db.GetSession()
+			err = models.EliminarRubroTransaccion(rubroPadre, rubroHijo, session)
+		} else {
+			_, err = models.DeleteArbolRubrosById(session, rubroHijo.Id)
+		}
 
 		if err != nil {
 			panic(err.Error())
