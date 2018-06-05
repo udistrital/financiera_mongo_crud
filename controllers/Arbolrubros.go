@@ -172,11 +172,12 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 		rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
 
 		nuevoRubro := models.ArbolRubros{
-			Id:          rubroDataHijo["Codigo"].(string),
-			Idpsql:      strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 0, 64),
-			Nombre:      rubroDataHijo["Nombre"].(string),
-			Descripcion: rubroDataHijo["Descripcion"].(string),
-			Hijos:       nil}
+			Id:               rubroDataHijo["Codigo"].(string),
+			Idpsql:           strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 0, 64),
+			Nombre:           rubroDataHijo["Nombre"].(string),
+			Descripcion:      rubroDataHijo["Descripcion"].(string),
+			Hijos:            nil,
+			Unidad_Ejecutora: strconv.FormatFloat(rubroDataHijo["UnidadEjecutora"].(float64), 'f', 0, 64)}
 
 		if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre["Codigo"] != nil {
 			rubroPadre = rubroDataPadre["Codigo"].(string)

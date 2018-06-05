@@ -13,13 +13,13 @@ import (
 const ArbolRubrosCollection = "arbol_rubro"
 
 type ArbolRubros struct {
-	Id              string   `json:"_id" bson:"_id,omitempty"`
-	Idpsql          string   `json:"idpsql"`
-	Nombre          string   `json:"nombre"`
-	Descripcion     string   `json:"descripcion"`
-	Hijos           []string `json:"hijos"`
-	Padre           string   `json:"padre"`
-	UnidadEjecutora string   `json:"unidad_ejecutora"`
+	Id               string   `json:"_id" bson:"_id,omitempty"`
+	Idpsql           string   `json:"idpsql"`
+	Nombre           string   `json:"nombre"`
+	Descripcion      string   `json:"descripcion"`
+	Hijos            []string `json:"hijos"`
+	Padre            string   `json:"padre"`
+	Unidad_Ejecutora string   `json:"unidad_ejecutora"`
 }
 
 func UpdateArbolRubros(session *mgo.Session, j ArbolRubros, id string) error {
