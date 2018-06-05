@@ -75,11 +75,11 @@ func GetArbolRubrosByIdPsql(session *mgo.Session, idPsql string) (ArbolRubros, e
 	return rubro, err
 }
 
-func GetNodo(session *mgo.Session, id string) (ArbolRubros, error) {
+func GetNodo(session *mgo.Session, id, ue string) (ArbolRubros, error) {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
 	var nodo ArbolRubros
-	err := c.Find(bson.M{"_id": id}).One(&nodo)
+	err := c.Find(bson.M{"_id": id, "unidad_ejecutora": bson.M{"$in": []string{"0", ue}}}).One(&nodo)
 	return nodo, err
 }
 
@@ -121,7 +121,7 @@ func EliminarRubroTransaccion(rubroPadre, rubroHijo ArbolRubros, session *mgo.Se
 	return err
 }
 
-func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
+func GetRaices(session *mgo.Session, ue string) ([]ArbolRubros, error) {
 	var (
 		roots []ArbolRubros
 	)
@@ -129,7 +129,12 @@ func GetRaices(session *mgo.Session) ([]ArbolRubros, error) {
 	defer session.Close()
 	// bson.M{ "$or": []bson.M{ bson.M{"padre": nil}, bson.M{"padre": } }, "idpsql": bson.M{"$ne": nil} }
 	// err := c.Find(bson.M{"padre": nil, "idpsql": bson.M{"$ne": nil}}).All(&roots)
-	err := c.Find(bson.M{"$or": []bson.M{bson.M{"padre": nil}, bson.M{"padre": ""}}, "idpsql": bson.M{"$ne": nil}}).All(&roots)
+	err := c.Find(bson.M{
+		"$or": []bson.M{bson.M{"padre": nil},
+			bson.M{"padre": ""}},
+		"idpsql":           bson.M{"$ne": nil},
+		"unidad_ejecutora": bson.M{"$in": []string{"0", ue}},
+	}).All(&roots)
 	beego.Info("roots: ", roots)
 	return roots, err
 }

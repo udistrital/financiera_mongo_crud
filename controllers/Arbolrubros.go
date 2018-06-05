@@ -254,11 +254,12 @@ func remove(slice []string, object string) []string {
 // @Param body body models.Rubro true "Body para la creacion de Rubro"
 // @Success 200 {object} models.Object
 // @Failure 404 body is empty
-// @router /RaicesArbol [get]
+// @router /RaicesArbol/:unidadEjecutora [get]
 func (j *ArbolRubrosController) RaicesArbol() {
+	ueStr := j.Ctx.Input.Param(":unidadEjecutora")
 	session, _ := db.GetSession()
 	var roots []map[string]interface{}
-	rubros, err := models.GetRaices(session)
+	rubros, err := models.GetRaices(session, ueStr)
 	for i := 0; i < len(rubros); i++ {
 		idPsql, _ := strconv.Atoi(rubros[i].Idpsql)
 		root := map[string]interface{}{
@@ -272,7 +273,7 @@ func (j *ArbolRubrosController) RaicesArbol() {
 			var hijos []map[string]interface{}
 			root["IsLeaf"] = false
 			for j := 0; j < len(root["Hijos"].([]string)); j++ {
-				hijo := GetHijoRubro(root["Hijos"].([]string)[j])
+				hijo := GetHijoRubro(root["Hijos"].([]string)[j], ueStr)
 				if len(hijo) > 0 {
 					hijos = append(hijos, hijo)
 				}
@@ -296,12 +297,13 @@ func (j *ArbolRubrosController) RaicesArbol() {
 // @Param body body stringtrue "Código de la raíz"
 // @Success 200 {object} models.Object
 // @Failure 404 body is empty
-// @router /ArbolRubro/:raiz [get]
+// @router /ArbolRubro/:raiz/:unidadEjecutora [get]
 func (j *ArbolRubrosController) ArbolRubro() {
 	nodoRaiz := j.GetString(":raiz")
+	ueStr := j.GetString(":unidadEjecutora")
 	session, _ := db.GetSession()
 	var arbolRubrosGrande []map[string]interface{}
-	raiz, err := models.GetNodo(session, nodoRaiz)
+	raiz, err := models.GetNodo(session, nodoRaiz, ueStr)
 	if err == nil {
 
 		arbolRubros := make(map[string]interface{})
@@ -311,7 +313,7 @@ func (j *ArbolRubrosController) ArbolRubro() {
 		arbolRubros["IsLeaf"] = true
 		var hijos []interface{}
 		for j := 0; j < len(raiz.Hijos); j++ {
-			hijo := GetHijoRubro(raiz.Hijos[j])
+			hijo := GetHijoRubro(raiz.Hijos[j], ueStr)
 			if len(hijo) > 0 {
 				arbolRubros["IsLeaf"] = false
 				hijos = append(hijos, hijo)
@@ -328,9 +330,9 @@ func (j *ArbolRubrosController) ArbolRubro() {
 	j.ServeJSON()
 }
 
-func GetHijoRubro(id string) map[string]interface{} {
+func GetHijoRubro(id, ue string) map[string]interface{} {
 	session, _ := db.GetSession()
-	rubroHijo, _ := models.GetNodo(session, id)
+	rubroHijo, _ := models.GetNodo(session, id, ue)
 	hijo := make(map[string]interface{})
 
 	if rubroHijo.Id != "" {
