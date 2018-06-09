@@ -268,11 +268,12 @@ func (j *ArbolRubrosController) RaicesArbol() {
 	for i := 0; i < len(rubros); i++ {
 		idPsql, _ := strconv.Atoi(rubros[i].Idpsql)
 		root := map[string]interface{}{
-			"Id":     idPsql,
-			"Codigo": rubros[i].Id,
-			"Nombre": rubros[i].Nombre,
-			"Hijos":  rubros[i].Hijos,
-			"IsLeaf": true,
+			"Id":              idPsql,
+			"Codigo":          rubros[i].Id,
+			"Nombre":          rubros[i].Nombre,
+			"Hijos":           rubros[i].Hijos,
+			"IsLeaf":          true,
+			"UnidadEjecutora": rubros[i].Unidad_Ejecutora,
 		}
 		if len(rubros[i].Hijos) > 0 {
 			var hijos []map[string]interface{}
@@ -316,6 +317,7 @@ func (j *ArbolRubrosController) ArbolRubro() {
 		arbolRubros["Codigo"] = raiz.Id
 		arbolRubros["Nombre"] = raiz.Nombre
 		arbolRubros["IsLeaf"] = true
+		arbolRubros["UnidadEjecutora"] = raiz.Unidad_Ejecutora
 		var hijos []interface{}
 		for j := 0; j < len(raiz.Hijos); j++ {
 			hijo := GetHijoRubro(raiz.Hijos[j], ueStr)
@@ -345,6 +347,7 @@ func GetHijoRubro(id, ue string) map[string]interface{} {
 		hijo["Codigo"] = rubroHijo.Id
 		hijo["Nombre"] = rubroHijo.Nombre
 		hijo["IsLeaf"] = false
+		hijo["UnidadEjecutora"] = rubroHijo.Unidad_Ejecutora
 		if len(rubroHijo.Hijos) == 0 {
 			hijo["IsLeaf"] = true
 			hijo["Hijos"] = nil
