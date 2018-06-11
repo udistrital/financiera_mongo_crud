@@ -164,11 +164,11 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 				Unidad_ejecutora:    dataApropiacion["UnidadEjecutora"].(string),
 				Padre:               rubro.Padre,
 				Hijos:               rubro.Hijos,
-				Apropiacion_inicial: dataApropiacion["ApropiacionInicial"].(int),
+				Apropiacion_inicial: int(dataApropiacion["ApropiacionInicial"].(float64)),
 			}
 			session, _ = db.GetSession()
 			models.RegistrarApropiacion(session, nuevaApropiacion, vigencia)
-			j.Data["json"] = map[string]interface{}{"Type": "error"}
+			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		} else {
 			panic(err.Error())
 			beego.Error("unmarshal error: ", err.Error())
