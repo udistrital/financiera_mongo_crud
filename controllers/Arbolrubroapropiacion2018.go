@@ -40,16 +40,17 @@ func (j *ArbolRubroApropiacion2018Controller) GetAll() {
 // @Param	nombre		path 	string	true		"El nombre de la ArbolRubroApropiacion2018 a consultar"
 // @Success 200 {object} models.ArbolRubroApropiacion2018
 // @Failure 403 :uid is empty
-// @router /:id [get]
+// @router /:id/:vigencia [get]
 func (j *ArbolRubroApropiacion2018Controller) Get() {
 	id := j.GetString(":id")
+	vigencia := j.GetString(":vigencia")
 	session, _ := db.GetSession()
 	if id != "" {
-		arbolrubroapropiacion2018, err := models.GetArbolRubroApropiacion2018ById(session, id)
+		arbolrubroapropiacion, err := models.GetArbolRubroApropiacionById(session, id, vigencia)
 		if err != nil {
 			j.Data["json"] = err.Error()
 		} else {
-			j.Data["json"] = arbolrubroapropiacion2018
+			j.Data["json"] = arbolrubroapropiacion
 		}
 	}
 	j.ServeJSON()
@@ -74,14 +75,20 @@ func (j *ArbolRubroApropiacion2018Controller) Delete() {
 // @Param	body		body 	models.ArbolRubroApropiacion2018	true		"Body para la creacion de ArbolRubroApropiacion2018"
 // @Success 200 {int} ArbolRubroApropiacion2018.Id
 // @Failure 403 body is empty
-// @router / [post]
+// @router /:vigencia [post]
 func (j *ArbolRubroApropiacion2018Controller) Post() {
-	var arbolrubroapropiacion2018 models.ArbolRubroApropiacion2018
-	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion2018)
-	fmt.Println(arbolrubroapropiacion2018)
-	session, _ := db.GetSession()
-	models.InsertArbolRubroApropiacion2018(session, arbolrubroapropiacion2018)
-	j.Data["json"] = "insert success!"
+	vigencia := j.GetString(":vigencia")
+	if vigencia != "" {
+		var arbolrubroapropiacion *models.ArbolRubroApropiacion
+		json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
+		fmt.Println(arbolrubroapropiacion)
+		session, _ := db.GetSession()
+		models.InsertArbolRubroApropiacion(session, arbolrubroapropiacion, vigencia)
+		j.Data["json"] = "insert success!"
+	} else {
+		j.Data["json"] = "vigencia null"
+	}
+
 	j.ServeJSON()
 }
 
@@ -154,8 +161,6 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 				panic(err.Error())
 			}
 
-			//map[Apropiacion: ApropiacionInicial:123333 Codigo:6 Hijos:[] Id:46018 IsLeaf:true Nombre:prro]
-
 			nuevaApropiacion := models.ArbolRubroApropiacion2018{
 				Id:                  codigoRubro,
 				Idpsql:              strconv.Itoa(int(dataApropiacion["Id"].(float64))),
@@ -166,9 +171,19 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 				Hijos:               rubro.Hijos,
 				Apropiacion_inicial: int(dataApropiacion["ApropiacionInicial"].(float64)),
 			}
-			session, _ = db.GetSession()
-			models.RegistrarApropiacion(session, nuevaApropiacion, vigencia)
-			j.Data["json"] = map[string]interface{}{"Type": "success"}
+
+			if nuevaApropiacion.Padre == "" { // Si el rubro actual es una raíz, se hace un registro sencillo
+				session, _ = db.GetSession()
+				beego.Info("Es raíz")
+				//models.RegistrarApropiacion(session, nuevaApropiacion, vigencia)
+			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
+				if err = construirRama(nuevaApropiacion.Id, vigencia, nuevaApropiacion.Apropiacion_inicial); err != nil {
+					beego.Error("error en construir rama: ", err.Error())
+					panic(err.Error())
+				}
+			}
+
+			j.Data["json"] = map[string]interface{}{"Type": "error"}
 		} else {
 			panic(err.Error())
 			beego.Error("unmarshal error: ", err.Error())
@@ -179,4 +194,49 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 	})
 
 	j.ServeJSON()
+}
+
+func construirRama(codigoRubro, vigencia string, apropiacion int) error {
+	var (
+		/*padreRubro,*/ actualRubro         models.ArbolRubros
+		padreApropiacion, actualApropiacion *models.ArbolRubroApropiacion
+		err                                 error
+	)
+
+	try.This(func() {
+		session, _ := db.GetSession()
+		actualRubro, err = models.GetArbolRubrosById(session, codigoRubro)
+		beego.Info("Rubro: ", actualRubro)
+		session, _ = db.GetSession()
+		padreApropiacion, _ = models.GetArbolRubroApropiacionById(session, actualRubro.Padre, vigencia)
+
+		if padreApropiacion == nil {
+			beego.Info("No está registrado en las apropiaciones")
+			session, _ = db.GetSession()
+			actualApropiacion = &models.ArbolRubroApropiacion{
+				Id:                  actualRubro.Id,
+				Idpsql:              actualRubro.Idpsql,
+				Nombre:              actualRubro.Nombre,
+				Descripcion:         actualRubro.Descripcion,
+				Unidad_ejecutora:    actualRubro.Unidad_Ejecutora,
+				Padre:               actualRubro.Padre,
+				Hijos:               actualRubro.Hijos,
+				Apropiacion_inicial: apropiacion,
+			}
+			models.InsertArbolRubroApropiacion(session, actualApropiacion, vigencia)
+			beego.Info("rubro: ", actualApropiacion, " registrado")
+			if actualApropiacion.Padre != "" {
+				beego.Info("Tiene padre")
+				construirRama(actualRubro.Padre, vigencia, actualApropiacion.Apropiacion_inicial)
+			}
+			beego.Info("Finaliza la recursividad...")
+		} else {
+			beego.Info("Está registrado en las apropiaciones")
+			//beego.Info("Padre de la apropiación: ", padreApropiacion)
+		}
+
+	}).Catch(func(e try.E) {
+		beego.Error("catch error: ", e)
+	})
+	return err
 }

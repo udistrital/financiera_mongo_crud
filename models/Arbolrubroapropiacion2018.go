@@ -9,8 +9,20 @@ import (
 )
 
 const ArbolRubroApropiacion2018Collection = "arbolrubroapropiacion2018"
+const ArbolRubroApropiacionCollection = "arbolrubroapropiacion"
 
 type ArbolRubroApropiacion2018 struct {
+	Id                  string   `json:"_id" bson:"_id,omitempty"`
+	Idpsql              string   `json:"idpsql"`
+	Nombre              string   `json:"nombre"`
+	Descripcion         string   `json:"descripcion"`
+	Unidad_ejecutora    string   `json:"unidad_ejecutora"`
+	Padre               string   `json:"padre"`
+	Hijos               []string `json:"hijos"`
+	Apropiacion_inicial int      `json:"apropiacion_inicial"`
+}
+
+type ArbolRubroApropiacion struct {
 	Id                  string   `json:"_id" bson:"_id,omitempty"`
 	Idpsql              string   `json:"idpsql"`
 	Nombre              string   `json:"nombre"`
@@ -41,10 +53,10 @@ func RegistrarApropiacion(session *mgo.Session, j ArbolRubroApropiacion2018, vig
 	}
 }
 
-func InsertArbolRubroApropiacion2018(session *mgo.Session, j ArbolRubroApropiacion2018) {
-	c := db.Cursor(session, ArbolRubroApropiacion2018Collection)
+func InsertArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, vigencia string) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
 	defer session.Close()
-	c.Insert(j)
+	c.Insert(&j)
 
 }
 
@@ -60,12 +72,12 @@ func GetAllArbolRubroApropiacion2018s(session *mgo.Session) []ArbolRubroApropiac
 	return arbolrubroapropiacion2018s
 }
 
-func GetArbolRubroApropiacion2018ById(session *mgo.Session, id string) ([]ArbolRubroApropiacion2018, error) {
-	c := db.Cursor(session, ArbolRubroApropiacion2018Collection)
+func GetArbolRubroApropiacionById(session *mgo.Session, id, vigencia string) (*ArbolRubroApropiacion, error) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+""+vigencia)
 	defer session.Close()
-	var arbolrubroapropiacion2018s []ArbolRubroApropiacion2018
-	err := c.Find(bson.M{"_id": bson.ObjectIdHex(id)}).All(&arbolrubroapropiacion2018s)
-	return arbolrubroapropiacion2018s, err
+	var arbolRubroApropiacion *ArbolRubroApropiacion
+	err := c.Find(bson.M{"_id": id}).One(&arbolRubroApropiacion)
+	return arbolRubroApropiacion, err
 }
 
 func DeleteArbolRubroApropiacion2018ById(session *mgo.Session, id string) (string, error) {

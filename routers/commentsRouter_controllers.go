@@ -73,14 +73,6 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
-			Method: "Post",
-			Router: `/`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
-		beego.ControllerComments{
 			Method: "Options",
 			Router: `/`,
 			AllowHTTPMethods: []string{"options"},
@@ -90,7 +82,7 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
 			Method: "Get",
-			Router: `/:id`,
+			Router: `/:id/:vigencia`,
 			AllowHTTPMethods: []string{"get"},
 			MethodParams: param.Make(),
 			Params: nil})
@@ -116,6 +108,14 @@ func init() {
 			Method: "ArbolRubroApropiacion2018DeleteOptions",
 			Router: `/:objectId`,
 			AllowHTTPMethods: []string{"options"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
+		beego.ControllerComments{
+			Method: "Post",
+			Router: `/:vigencia`,
+			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})
 
