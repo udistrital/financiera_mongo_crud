@@ -82,7 +82,7 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
 			Method: "Get",
-			Router: `/:id/:vigencia`,
+			Router: `/:id/:vigencia/:unidadEjecutora`,
 			AllowHTTPMethods: []string{"get"},
 			MethodParams: param.Make(),
 			Params: nil})
@@ -106,7 +106,7 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
 			Method: "Put",
-			Router: `/:objectId/:vigencia`,
+			Router: `/:objectId/:vigencia/:unidadEjecutora`,
 			AllowHTTPMethods: []string{"put"},
 			MethodParams: param.Make(),
 			Params: nil})
@@ -114,8 +114,24 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
 			Method: "Post",
-			Router: `/:vigencia`,
+			Router: `/:vigencia/:unidadEjecutora`,
 			AllowHTTPMethods: []string{"post"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
+		beego.ControllerComments{
+			Method: "ArbolApropiacion",
+			Router: `/ArbolApropiacion/:raiz/:unidadEjecutora/:vigencia`,
+			AllowHTTPMethods: []string{"get"},
+			MethodParams: param.Make(),
+			Params: nil})
+
+	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
+		beego.ControllerComments{
+			Method: "RaicesArbolApropiacion",
+			Router: `/RaicesArbolApropiacion/:unidadEjecutora/:vigencia`,
+			AllowHTTPMethods: []string{"get"},
 			MethodParams: param.Make(),
 			Params: nil})
 

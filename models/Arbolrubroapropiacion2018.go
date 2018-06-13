@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"github.com/astaxie/beego"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -33,8 +34,8 @@ type ArbolRubroApropiacion struct {
 	Apropiacion_inicial int      `json:"apropiacion_inicial"`
 }
 
-func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, vigencia string) error {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
+func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, ue, vigencia string) error {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
 	// Update
 	fmt.Println("id update: ", id)
@@ -47,16 +48,16 @@ func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, 
 
 }
 
-func RegistrarApropiacion(session *mgo.Session, j ArbolRubroApropiacion2018, vigencia string) {
-	c := db.Cursor(session, ArbolRubroApropiacion2018Collection)
+func RegistrarApropiacion(session *mgo.Session, j ArbolRubroApropiacion2018, ue, vigencia string) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
 	if err := c.Insert(j); err != nil {
 		panic(err)
 	}
 }
 
-func InsertArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, vigencia string) {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
+func InsertArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, ue, vigencia string) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
 	c.Insert(&j)
 
@@ -74,8 +75,8 @@ func GetAllArbolRubroApropiacion2018s(session *mgo.Session) []ArbolRubroApropiac
 	return arbolrubroapropiacion2018s
 }
 
-func GetArbolRubroApropiacionById(session *mgo.Session, id, vigencia string) (*ArbolRubroApropiacion, error) {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
+func GetArbolRubroApropiacionById(session *mgo.Session, id, ue, vigencia string) (*ArbolRubroApropiacion, error) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
 	var arbolRubroApropiacion *ArbolRubroApropiacion
 	err := c.Find(bson.M{"_id": id}).One(&arbolRubroApropiacion)
@@ -88,4 +89,26 @@ func DeleteArbolRubroApropiacion2018ById(session *mgo.Session, id string) (strin
 	defer session.Close()
 	err := c.RemoveId(bson.ObjectIdHex(id))
 	return "ok", err
+}
+
+func GetNodoApropiacion(session *mgo.Session, id, ue, vigencia string) (ArbolRubroApropiacion, error) {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
+	defer session.Close()
+	var nodo ArbolRubroApropiacion
+	err := c.Find(bson.M{"_id": id}).One(&nodo)
+	return nodo, err
+}
+
+func GetRaicesApropiacion(session *mgo.Session, ue, vigencia string) ([]ArbolRubroApropiacion, error) {
+	var roots []ArbolRubroApropiacion
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
+	defer session.Close()
+	err := c.Find(bson.M{
+		"$or": []bson.M{bson.M{"padre": nil},
+			bson.M{"padre": ""}},
+		"idpsql":           bson.M{"$ne": nil},
+		"unidad_ejecutora": bson.M{"$in": []string{"0", ue}},
+	}).All(&roots)
+	beego.Info("roots: ", roots)
+	return roots, err
 }
