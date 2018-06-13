@@ -33,11 +33,11 @@ type ArbolRubroApropiacion struct {
 	Apropiacion_inicial int      `json:"apropiacion_inicial"`
 }
 
-func UpdateArbolRubroApropiacion2018(session *mgo.Session, j ArbolRubroApropiacion2018, id string) error {
-	c := db.Cursor(session, ArbolRubroApropiacion2018Collection)
+func UpdateArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, id, vigencia string) error {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection)
 	defer session.Close()
 	// Update
-	err := c.Update(bson.M{"_id": bson.ObjectIdHex(id)}, &j)
+	err := c.Update(bson.M{"_id": id}, &j)
 	if err != nil {
 		panic(err)
 	}

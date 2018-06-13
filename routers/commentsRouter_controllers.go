@@ -97,17 +97,17 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
-			Method: "Put",
+			Method: "ArbolRubroApropiacion2018DeleteOptions",
 			Router: `/:objectId`,
-			AllowHTTPMethods: []string{"put"},
+			AllowHTTPMethods: []string{"options"},
 			MethodParams: param.Make(),
 			Params: nil})
 
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacion2018Controller"],
 		beego.ControllerComments{
-			Method: "ArbolRubroApropiacion2018DeleteOptions",
-			Router: `/:objectId`,
-			AllowHTTPMethods: []string{"options"},
+			Method: "Put",
+			Router: `/:objectId/:vigencia`,
+			AllowHTTPMethods: []string{"put"},
 			MethodParams: param.Make(),
 			Params: nil})
 

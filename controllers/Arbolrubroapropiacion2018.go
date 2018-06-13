@@ -98,15 +98,15 @@ func (j *ArbolRubroApropiacion2018Controller) Post() {
 // @Param	body		body 	models.Object	true		"The body"
 // @Success 200 {object} models.Object
 // @Failure 403 :objectId is empty
-// @router /:objectId [put]
+// @router /:objectId/:vigencia [put]
 func (j *ArbolRubroApropiacion2018Controller) Put() {
 	objectId := j.Ctx.Input.Param(":objectId")
-
-	var arbolrubroapropiacion2018 models.ArbolRubroApropiacion2018
-	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion2018)
+	vigencia := j.Ctx.Input.Param(":vigencia")
+	var arbolrubroapropiacion *models.ArbolRubroApropiacion
+	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
 	session, _ := db.GetSession()
 
-	err := models.UpdateArbolRubroApropiacion2018(session, arbolrubroapropiacion2018, objectId)
+	err := models.UpdateArbolRubroApropiacion(session, arbolrubroapropiacion, objectId, vigencia)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
@@ -206,7 +206,6 @@ func construirRama(codigoRubro, vigencia string, apropiacion int) error {
 	try.This(func() {
 		session, _ := db.GetSession()
 		actualRubro, err = models.GetArbolRubrosById(session, codigoRubro)
-		beego.Info("Rubro: ", actualRubro)
 		session, _ = db.GetSession()
 		padreApropiacion, _ = models.GetArbolRubroApropiacionById(session, actualRubro.Padre, vigencia)
 
@@ -224,15 +223,22 @@ func construirRama(codigoRubro, vigencia string, apropiacion int) error {
 				Apropiacion_inicial: apropiacion,
 			}
 			models.InsertArbolRubroApropiacion(session, actualApropiacion, vigencia)
-			beego.Info("rubro: ", actualApropiacion, " registrado")
 			if actualApropiacion.Padre != "" {
 				beego.Info("Tiene padre")
 				construirRama(actualRubro.Padre, vigencia, actualApropiacion.Apropiacion_inicial)
 			}
-			beego.Info("Finaliza la recursividad...")
 		} else {
 			beego.Info("Está registrado en las apropiaciones")
-			//beego.Info("Padre de la apropiación: ", padreApropiacion)
+			session, _ = db.GetSession()
+			beego.Info(codigoRubro)
+			apropiacionActualizada, _ := models.GetArbolRubroApropiacionById(session, codigoRubro, vigencia)
+			apropiacionActualizada.Apropiacion_inicial = apropiacion
+			session, _ = db.GetSession()
+			models.UpdateArbolRubroApropiacion(session, apropiacionActualizada, apropiacionActualizada.Id, vigencia)
+			if actualApropiacion.Padre != "" {
+				valorApropiacion := actualApropiacion.Apropiacion_inicial - apropiacion
+				construirRama(actualApropiacion.Padre, vigencia, valorApropiacion)
+			}
 		}
 
 	}).Catch(func(e try.E) {
