@@ -33,12 +33,14 @@ type ArbolRubroApropiacion struct {
 	Apropiacion_inicial int      `json:"apropiacion_inicial"`
 }
 
-func UpdateArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, id, vigencia string) error {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection)
+func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, vigencia string) error {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
 	defer session.Close()
 	// Update
+	fmt.Println("id update: ", id)
 	err := c.Update(bson.M{"_id": id}, &j)
 	if err != nil {
+		fmt.Println("updatw error")
 		panic(err)
 	}
 	return err
@@ -73,10 +75,11 @@ func GetAllArbolRubroApropiacion2018s(session *mgo.Session) []ArbolRubroApropiac
 }
 
 func GetArbolRubroApropiacionById(session *mgo.Session, id, vigencia string) (*ArbolRubroApropiacion, error) {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+""+vigencia)
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+vigencia)
 	defer session.Close()
 	var arbolRubroApropiacion *ArbolRubroApropiacion
 	err := c.Find(bson.M{"_id": id}).One(&arbolRubroApropiacion)
+	fmt.Println(arbolRubroApropiacion, " | ", err)
 	return arbolRubroApropiacion, err
 }
 

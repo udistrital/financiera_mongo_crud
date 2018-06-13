@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -102,7 +103,7 @@ func (j *ArbolRubroApropiacion2018Controller) Post() {
 func (j *ArbolRubroApropiacion2018Controller) Put() {
 	objectId := j.Ctx.Input.Param(":objectId")
 	vigencia := j.Ctx.Input.Param(":vigencia")
-	var arbolrubroapropiacion *models.ArbolRubroApropiacion
+	var arbolrubroapropiacion models.ArbolRubroApropiacion
 	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
 	session, _ := db.GetSession()
 
@@ -175,7 +176,7 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 			if nuevaApropiacion.Padre == "" { // Si el rubro actual es una raíz, se hace un registro sencillo
 				session, _ = db.GetSession()
 				beego.Info("Es raíz")
-				//models.RegistrarApropiacion(session, nuevaApropiacion, vigencia)
+				models.RegistrarApropiacion(session, nuevaApropiacion, vigencia)
 			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
 				if err = construirRama(nuevaApropiacion.Id, vigencia, nuevaApropiacion.Apropiacion_inicial); err != nil {
 					beego.Error("error en construir rama: ", err.Error())
@@ -183,7 +184,7 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 				}
 			}
 
-			j.Data["json"] = map[string]interface{}{"Type": "error"}
+			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		} else {
 			panic(err.Error())
 			beego.Error("unmarshal error: ", err.Error())
@@ -196,7 +197,7 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 	j.ServeJSON()
 }
 
-func construirRama(codigoRubro, vigencia string, apropiacion int) error {
+func construirRama(codigoRubro, vigencia string, nuevaApropiacion int) error {
 	var (
 		/*padreRubro,*/ actualRubro         models.ArbolRubros
 		padreApropiacion, actualApropiacion *models.ArbolRubroApropiacion
@@ -212,16 +213,7 @@ func construirRama(codigoRubro, vigencia string, apropiacion int) error {
 		if padreApropiacion == nil {
 			beego.Info("No está registrado en las apropiaciones")
 			session, _ = db.GetSession()
-			actualApropiacion = &models.ArbolRubroApropiacion{
-				Id:                  actualRubro.Id,
-				Idpsql:              actualRubro.Idpsql,
-				Nombre:              actualRubro.Nombre,
-				Descripcion:         actualRubro.Descripcion,
-				Unidad_ejecutora:    actualRubro.Unidad_Ejecutora,
-				Padre:               actualRubro.Padre,
-				Hijos:               actualRubro.Hijos,
-				Apropiacion_inicial: apropiacion,
-			}
+			actualApropiacion = crearNuevaApropiacion(actualRubro, nuevaApropiacion)
 			models.InsertArbolRubroApropiacion(session, actualApropiacion, vigencia)
 			if actualApropiacion.Padre != "" {
 				beego.Info("Tiene padre")
@@ -232,17 +224,70 @@ func construirRama(codigoRubro, vigencia string, apropiacion int) error {
 			session, _ = db.GetSession()
 			beego.Info(codigoRubro)
 			apropiacionActualizada, _ := models.GetArbolRubroApropiacionById(session, codigoRubro, vigencia)
-			apropiacionActualizada.Apropiacion_inicial = apropiacion
+			apropiacionAnterior := 0
 			session, _ = db.GetSession()
-			models.UpdateArbolRubroApropiacion(session, apropiacionActualizada, apropiacionActualizada.Id, vigencia)
-			if actualApropiacion.Padre != "" {
-				valorApropiacion := actualApropiacion.Apropiacion_inicial - apropiacion
-				construirRama(actualApropiacion.Padre, vigencia, valorApropiacion)
+			if apropiacionActualizada != nil {
+				apropiacionAnterior = apropiacionActualizada.Apropiacion_inicial
+				apropiacionActualizada.Apropiacion_inicial = nuevaApropiacion
+				models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, vigencia)
+			} else {
+				actualApropiacion = crearNuevaApropiacion(actualRubro, nuevaApropiacion)
+				models.InsertArbolRubroApropiacion(session, actualApropiacion, vigencia)
 			}
+
+			propagarCambio(padreApropiacion.Id, vigencia, nuevaApropiacion-apropiacionAnterior)
+
 		}
 
 	}).Catch(func(e try.E) {
 		beego.Error("catch error: ", e)
 	})
 	return err
+}
+
+func propagarCambio(codigoRubro, vigencia string, valorPropagado int) error {
+	var (
+		/*padreRubro,*/ //actualRubro         models.ArbolRubros
+		//padreApropiacion, actualApropiacion *models.ArbolRubroApropiacion
+		err error
+	)
+	try.This(func() { // try catch para recibir errores
+		beego.Info("Propagado: ", valorPropagado)
+		beego.Info("Vigencia: ", vigencia)
+		session, _ := db.GetSession()
+		beego.Info(codigoRubro)
+		apropiacionActualizada, err := models.GetArbolRubroApropiacionById(session, codigoRubro, vigencia)
+		apropiacionActualizada.Apropiacion_inicial += valorPropagado
+		beego.Info(apropiacionActualizada)
+		//beego.Info(err.Error())
+		if err != nil {
+			panic(err.Error())
+		}
+		session, _ = db.GetSession()
+		beego.Info("antes de otra cosa")
+		models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, vigencia)
+		beego.Info("otra cosa")
+		if apropiacionActualizada.Padre != "" {
+			//valorApropiacion := nuevaApropiacion - apropiacionAnterior //actualApropiacion.Apropiacion_inicial
+			propagarCambio(apropiacionActualizada.Padre, vigencia, valorPropagado)
+		}
+	}).Catch(func(e try.E) {
+		beego.Error("catch error: ", e)
+		err = errors.New("unknow error")
+	})
+	return err
+}
+
+func crearNuevaApropiacion(actualRubro models.ArbolRubros, nuevaApropiacion int) *models.ArbolRubroApropiacion {
+	actualApropiacion := &models.ArbolRubroApropiacion{
+		Id:                  actualRubro.Id,
+		Idpsql:              actualRubro.Idpsql,
+		Nombre:              actualRubro.Nombre,
+		Descripcion:         actualRubro.Descripcion,
+		Unidad_ejecutora:    actualRubro.Unidad_Ejecutora,
+		Padre:               actualRubro.Padre,
+		Hijos:               actualRubro.Hijos,
+		Apropiacion_inicial: nuevaApropiacion,
+	}
+	return actualApropiacion
 }
