@@ -292,13 +292,13 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 				beego.Info("Es raíz")
 				models.RegistrarApropiacion(session, nuevaApropiacion, unidadEjecutora, vigencia)
 			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
-				if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Apropiacion_inicial); err != nil {
+				if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Idpsql, nuevaApropiacion.Apropiacion_inicial); err != nil {
 					beego.Error("error en construir rama: ", err.Error())
 					panic(err.Error())
 				}
 			}
 
-			j.Data["json"] = map[string]interface{}{"Type": "error"}
+			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		} else {
 			panic(err.Error())
 			beego.Error("unmarshal error: ", err.Error())
@@ -311,7 +311,7 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarApropiacionInicial() {
 	j.ServeJSON()
 }
 
-func construirRama(codigoRubro, ue, vigencia string, nuevaApropiacion int) error {
+func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int) error {
 	var (
 		/*padreRubro,*/ actualRubro         models.ArbolRubros
 		padreApropiacion, actualApropiacion *models.ArbolRubroApropiacion
@@ -327,11 +327,11 @@ func construirRama(codigoRubro, ue, vigencia string, nuevaApropiacion int) error
 		if padreApropiacion == nil {
 			beego.Info("No está registrado en las apropiaciones")
 			session, _ = db.GetSession()
-			actualApropiacion = crearNuevaApropiacion(actualRubro, nuevaApropiacion)
+			actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
 			models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
 			if actualApropiacion.Padre != "" {
 				beego.Info("Tiene padre")
-				construirRama(actualRubro.Padre, ue, vigencia, actualApropiacion.Apropiacion_inicial)
+				construirRama(actualRubro.Padre, ue, vigencia, actualRubro.Idpsql, actualApropiacion.Apropiacion_inicial)
 			}
 		} else {
 			beego.Info("Está registrado en las apropiaciones")
@@ -345,7 +345,7 @@ func construirRama(codigoRubro, ue, vigencia string, nuevaApropiacion int) error
 				apropiacionActualizada.Apropiacion_inicial = nuevaApropiacion
 				models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, ue, vigencia)
 			} else {
-				actualApropiacion = crearNuevaApropiacion(actualRubro, nuevaApropiacion)
+				actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
 				models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
 			}
 
@@ -392,10 +392,10 @@ func propagarCambio(codigoRubro, ue, vigencia string, valorPropagado int) error 
 	return err
 }
 
-func crearNuevaApropiacion(actualRubro models.ArbolRubros, nuevaApropiacion int) *models.ArbolRubroApropiacion {
+func crearNuevaApropiacion(actualRubro models.ArbolRubros, aprId string, nuevaApropiacion int) *models.ArbolRubroApropiacion {
 	actualApropiacion := &models.ArbolRubroApropiacion{
 		Id:                  actualRubro.Id,
-		Idpsql:              actualRubro.Idpsql,
+		Idpsql:              aprId,
 		Nombre:              actualRubro.Nombre,
 		Descripcion:         actualRubro.Descripcion,
 		Unidad_ejecutora:    actualRubro.Unidad_Ejecutora,
