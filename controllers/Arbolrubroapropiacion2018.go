@@ -429,6 +429,8 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarCdp() {
 
 			if len(rubroApropiacion.Movimientos) == 0 {
 				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
+			} else {
+				panic("CDP already exist!")
 			}
 
 			nuevoValor["Mes_cdp"] = v.(map[string]interface{})["Valor"].(float64)
