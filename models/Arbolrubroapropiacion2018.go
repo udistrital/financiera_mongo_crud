@@ -24,33 +24,33 @@ type ArbolRubroApropiacion2018 struct {
 }
 
 type ArbolRubroApropiacion struct {
-	Id                  string                 `json:"_id" bson:"_id,omitempty"`
-	Idpsql              string                 `json:"idpsql"`
-	Nombre              string                 `json:"nombre"`
-	Descripcion         string                 `json:"descripcion"`
-	Unidad_ejecutora    string                 `json:"unidad_ejecutora"`
-	Padre               string                 `json:"padre"`
-	Hijos               []string               `json:"hijos"`
-	Apropiacion_inicial int                    `json:"apropiacion_inicial"`
-	Movimientos         map[string]*Movimiento `json:"mes"`
+	Id                  string                        `json:"_id" bson:"_id,omitempty"`
+	Idpsql              string                        `json:"idpsql"`
+	Nombre              string                        `json:"nombre"`
+	Descripcion         string                        `json:"descripcion"`
+	Unidad_ejecutora    string                        `json:"unidad_ejecutora"`
+	Padre               string                        `json:"padre"`
+	Hijos               []string                      `json:"hijos"`
+	Apropiacion_inicial int                           `json:"apropiacion_inicial"`
+	Movimientos         map[string]map[string]float64 `json:"movimientos"`
 }
 
-type Movimiento struct {
-	Mes_modificacion        float64 `json:"mes_modificacion"`
-	Total_modificacion      float64 `json:"total_modificacion"`
-	Total_adicion           float64 `json:"total_adicion"`
-	Total_reduccion         float64 `json:"total_reduccion"`
-	Traslados_total_credito float64 `json:"traslados_total_credito"`
-	Traslados_contracredito float64 `json:"traslados_contracredito"`
-	Total_anulado           float64 `json:"total_anulado"`
-	Mes_cdp                 float64 `json:"mes_cdp"`
-	Total_cdp               float64 `json:"total_cdp"`
-	Mes_rp                  float64 `json:"mes_rp"`
-	Total_rp                float64 `json:"total_rp"`
-	Mes_op                  float64 `json:"mes_op"`
-	Total_giro              float64 `json:"total_giro"`
-	Mes_giro                float64 `json:"mes_giro"`
-}
+// type Movimiento struct {
+// 	Mes_modificacion        float64 `json:"mes_modificacion"`
+// 	Total_modificacion      float64 `json:"total_modificacion"`
+// 	Total_adicion           float64 `json:"total_adicion"`
+// 	Total_reduccion         float64 `json:"total_reduccion"`
+// 	Traslados_total_credito float64 `json:"traslados_total_credito"`
+// 	Traslados_contracredito float64 `json:"traslados_contracredito"`
+// 	Total_anulado           float64 `json:"total_anulado"`
+// 	Mes_cdp                 float64 `json:"mes_cdp"`
+// 	Total_cdp               float64 `json:"total_cdp"`
+// 	Mes_rp                  float64 `json:"mes_rp"`
+// 	Total_rp                float64 `json:"total_rp"`
+// 	Mes_op                  float64 `json:"mes_op"`
+// 	Total_giro              float64 `json:"total_giro"`
+// 	Mes_giro                float64 `json:"mes_giro"`
+// }
 
 func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, ue, vigencia string) error {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)

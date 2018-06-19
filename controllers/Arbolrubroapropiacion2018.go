@@ -399,7 +399,7 @@ func crearNuevaApropiacion(actualRubro models.ArbolRubros, aprId string, nuevaAp
 }
 
 // @Title RegistrarCdp
-// @Description Crear RegistrarCdp
+// @Description Crear RegistrarCdp, este servicio se utiliza sólo para registrar por primera vez el CDP
 // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de RegistrarCdp"
 // @Success 200 {int} ArbolRubroApropiacion2018.Id
 // @Failure 403 body is empty
@@ -425,23 +425,61 @@ func (j *ArbolRubroApropiacion2018Controller) RegistrarCdp() {
 				panic(err.Error())
 			}
 
-			movimiento := &models.Movimiento{
-				Mes_cdp:   v.(map[string]interface{})["Valor"].(float64),
-				Total_cdp: v.(map[string]interface{})["Valor"].(float64),
-			}
-			// veirifica que el map de Movimientos este vació, de ser así, crea una nueva instancia del mismo
-			if len(rubroApropiacion.Movimientos) == 0 {
-				rubroApropiacion.Movimientos = make(map[string]*models.Movimiento)
-			}
-			rubroApropiacion.Movimientos[cdpData["MesRegistro"].(string)] = movimiento
+			nuevoValor := make(map[string]float64)
 
-			beego.Info("rubroApropiacion: ", rubroApropiacion.Movimientos["06"])
+			if len(rubroApropiacion.Movimientos) == 0 {
+				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
+			}
+
+			nuevoValor["Mes_cdp"] = v.(map[string]interface{})["Valor"].(float64)
+			nuevoValor["Total_cdp"] = v.(map[string]interface{})["Valor"].(float64)
+
+			rubroApropiacion.Movimientos[cdpData["MesRegistro"].(string)] = nuevoValor
+			session, _ = db.GetSession()
+			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
+			propagarCdp(rubroApropiacion.Padre, cdpData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
 	}).Catch(func(e try.E) {
-		beego.Error("cath error: ", e)
+		beego.Error("cath error registrar cdp: ", e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 	j.ServeJSON()
+}
+
+func propagarCdp(padreRubro, mes, vigencia, ue string, valorPrograpado map[string]float64) (err error) {
+	try.This(func() {
+		session, _ := db.GetSession()
+		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		if len(apropiacionPadre.Movimientos) == 0 {
+			apropiacionPadre.Movimientos = make(map[string]map[string]float64)
+			apropiacionPadre.Movimientos[mes] = valorPrograpado
+		} else {
+			for key, value := range valorPrograpado {
+				if apropiacionPadre.Movimientos[mes][key] != 0 {
+					apropiacionPadre.Movimientos[mes][key] += value
+				} else {
+					apropiacionPadre.Movimientos[mes][key] = value
+				}
+			}
+		}
+
+		session, _ = db.GetSession()
+		models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
+
+		if apropiacionPadre.Padre != "" {
+			propagarCdp(apropiacionPadre.Padre, mes, vigencia, ue, valorPrograpado)
+		}
+
+	}).Catch(func(e try.E) {
+		beego.Error("catch error propagarCdp: ", e)
+	})
+
+	return err
 }
