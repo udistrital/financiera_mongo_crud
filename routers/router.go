@@ -26,7 +26,7 @@ func init() {
 		),
 		beego.NSNamespace("/arbol_rubro_apropiaciones",
 			beego.NSInclude(
-				&controllers.ArbolRubroApropiacion2018Controller{},
+				&controllers.ArbolRubroApropiacionController{},
 			),
 		),
 	)
