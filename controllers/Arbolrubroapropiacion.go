@@ -456,7 +456,7 @@ func (j *ArbolRubroApropiacionController) RegistrarCdp() {
 // @Success 200 {string} success
 // @Failure 403 body is empty
 // @router AnulacionCdp/ [post]
-func (j *ArbolRubroApropiacionController) RegistraAnulacionrCdp() {
+func (j *ArbolRubroApropiacionController) RegistraAnulacionCdp() {
 	try.This(func() {
 		var anulacionData map[string]interface{}
 
@@ -497,13 +497,69 @@ func (j *ArbolRubroApropiacionController) RegistraAnulacionrCdp() {
 	j.ServeJSON()
 }
 
-// @Title RegistrarRp
-// @Description Crear y propagar Valores de RP
-// @Param	body		body 	models.ArbolRubroApropiacion true "Body para la creación de RP"
+// @Title RegistrarMovimiento
+// @Description Crear y propagar Valores de movimientos en arbol apropiaciones
+// @Param	body		body 	models.ArbolRubroApropiacion true "Body para la movimiento en arbol apropiaciones"
 // @Success 200 {string} success
 // @Failure 403 body is empty
-// @router RegistrarRp/ [post]
-// func (j *ArbolRubroApropiacionController) RegistrarValores()
+// @router RegistrarMovimiento/:tipoPago [post]
+func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
+	var dataValor map[string]interface{}
+
+	try.This(func() {
+
+		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &dataValor); err != nil {
+			panic(err.Error())
+		}
+
+		switch tipoMovimiento := j.GetString(":tipoPago"); tipoMovimiento {
+		//rp
+		case "rp":
+			registrarValores(dataValor, "total_rp", "mes_rp")
+		case "anulacion":
+			registrarValores(dataValor, "total_anulado", "mes_anulado")
+		}
+
+		j.Data["json"] = map[string]interface{}{"Type": "success"}
+	}).Catch(func(e try.E) {
+		beego.Error("catch error registrar movimiento: ", e)
+		j.Data["json"] = map[string]interface{}{"Type": "error"}
+	})
+	j.ServeJSON()
+}
+
+func registrarValores(dataValor map[string]interface{}, total, mes string) {
+	try.This(func() {
+
+		beego.Info(dataValor)
+
+		for _, v := range dataValor["Afectacion"].([]interface{}) {
+			rubro := v.(map[string]interface{})["Rubro"].(string)
+			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
+			vigencia := dataValor["Vigencia"].(string)
+
+			session, _ := db.GetSession()
+			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
+
+			if err != nil {
+				panic(err.Error())
+			}
+
+			nuevoValor := make(map[string]float64)
+
+			nuevoValor[mes] = v.(map[string]interface{})["Valor"].(float64)
+			nuevoValor[total] = v.(map[string]interface{})["Valor"].(float64)
+
+			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][mes] = v.(map[string]interface{})["Valor"].(float64)
+			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][total] += v.(map[string]interface{})["Valor"].(float64)
+			session, _ = db.GetSession()
+			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
+			prograpacionValores(rubroApropiacion.Padre, dataValor["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
+		}
+	}).Catch(func(e try.E) {
+		beego.Error("catch error registrar valores: ", e)
+	})
+}
 
 // @Title RegistrarRp
 // @Description Crear y propagar Valores de RP
@@ -538,7 +594,7 @@ func (j *ArbolRubroApropiacionController) RegistrarRp() {
 			nuevoValor["mes_rp"] = v.(map[string]interface{})["Valor"].(float64)
 			nuevoValor["total_rp"] = v.(map[string]interface{})["Valor"].(float64)
 
-			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["mes_rp"] += v.(map[string]interface{})["Valor"].(float64)
+			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["mes_rp"] = v.(map[string]interface{})["Valor"].(float64)
 			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["total_rp"] += v.(map[string]interface{})["Valor"].(float64)
 			session, _ = db.GetSession()
 			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
