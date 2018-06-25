@@ -416,7 +416,7 @@ func (j *ArbolRubroApropiacionController) RegistrarCdp() {
 		for _, v := range cdpData["Afectacion"].([]interface{}) {
 			rubro := v.(map[string]interface{})["Rubro"].(string)
 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
-			vigencia := cdpData["Vigencia"].(string)
+			vigencia := strconv.Itoa(int(cdpData["Vigencia"].(float64)))
 
 			session, _ := db.GetSession()
 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
@@ -429,8 +429,6 @@ func (j *ArbolRubroApropiacionController) RegistrarCdp() {
 
 			if len(rubroApropiacion.Movimientos) == 0 {
 				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
-			} else {
-				panic("CDP already exist!")
 			}
 
 			nuevoValor["mes_cdp"] = v.(map[string]interface{})["Valor"].(float64)
@@ -610,31 +608,68 @@ func (j *ArbolRubroApropiacionController) RegistrarRp() {
 
 func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado map[string]float64) (err error) {
 	try.This(func() {
+		// session, _ := db.GetSession()
+		// apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
+
+		// if err != nil {
+		// 	panic(err.Error())
+		// }
+
+		// if len(apropiacionPadre.Movimientos) == 0 {
+		// 	apropiacionPadre.Movimientos = make(map[string]map[string]float64)
+		// 	apropiacionPadre.Movimientos[mes] = valorPrograpado
+		// } else {
+		// 	for key, value := range valorPrograpado {
+		// 		if apropiacionPadre.Movimientos[mes][key] != 0 {
+		// 			apropiacionPadre.Movimientos[mes][key] += value
+		// 		} else {
+		// 			apropiacionPadre.Movimientos[mes][key] = value
+		// 		}
+		// 	}
+		// }
+
+		// session, _ = db.GetSession()
+		// models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
+
+		// if apropiacionPadre.Padre != "" {
+		// 	prograpacionValores(apropiacionPadre.Padre, mes, vigencia, ue, valorPrograpado)
+		// }
+
+		//variables
 		session, _ := db.GetSession()
 		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
-
 		if err != nil {
 			panic(err.Error())
 		}
 
-		if len(apropiacionPadre.Movimientos) == 0 {
-			apropiacionPadre.Movimientos = make(map[string]map[string]float64)
-			apropiacionPadre.Movimientos[mes] = valorPrograpado
-		} else {
-			for key, value := range valorPrograpado {
-				if apropiacionPadre.Movimientos[mes][key] != 0 {
-					apropiacionPadre.Movimientos[mes][key] += value
-				} else {
-					apropiacionPadre.Movimientos[mes][key] = value
+		//models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
+
+		for apropiacionPadre != nil {
+
+			if len(apropiacionPadre.Movimientos) == 0 {
+				apropiacionPadre.Movimientos = make(map[string]map[string]float64)
+				apropiacionPadre.Movimientos[mes] = valorPrograpado
+			} else {
+				for key, value := range valorPrograpado {
+					if apropiacionPadre.Movimientos[mes][key] != 0 {
+						apropiacionPadre.Movimientos[mes][key] += value
+					} else {
+						apropiacionPadre.Movimientos[mes][key] = value
+					}
 				}
 			}
-		}
+			session, _ := db.GetSession()
+			if apropiacionPadre.Padre != "" {
+				apropiacionPadre, err = models.GetArbolRubroApropiacionById(session, apropiacionPadre.Padre, ue, vigencia)
+			} else {
+				apropiacionPadre = nil
+			}
 
-		session, _ = db.GetSession()
-		models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
+			if err != nil {
+				panic(err.Error())
+			}
+			beego.Info("Apr ", apropiacionPadre)
 
-		if apropiacionPadre.Padre != "" {
-			prograpacionValores(apropiacionPadre.Padre, mes, vigencia, ue, valorPrograpado)
 		}
 
 	}).Catch(func(e try.E) {
