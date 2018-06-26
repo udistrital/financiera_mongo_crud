@@ -7,6 +7,7 @@ import (
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/txn"
 )
 
 const ArbolRubroApropiacion2018Collection = "arbolrubroapropiacion2018"
@@ -129,4 +130,42 @@ func GetRaicesApropiacion(session *mgo.Session, ue, vigencia string) ([]ArbolRub
 	}).All(&roots)
 	beego.Info("roots: ", roots)
 	return roots, err
+}
+
+func CrearEstrctTransaccion(session *mgo.Session, estructuras []*ArbolRubroApropiacion, ue, vigencia string) error {
+	var ops []txn.Op
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
+	runner := txn.NewRunner(c)
+	for _, estructura := range estructuras {
+		op := txn.Op{
+			C:      ArbolRubroApropiacionCollection + "_" + vigencia + "_" + ue,
+			Id:     estructura.Id,
+			Assert: "d-",
+			Update: estructura,
+		}
+		fmt.Println("estructura: ", estructura)
+		ops = append(ops, op)
+	}
+	fmt.Println("ops: ", ops)
+	id := bson.NewObjectId()
+	err := runner.Run(ops, id, nil)
+	return err
+	// c := db.Cursor(session, ArbolRubrosCollection)
+	// runner := txn.NewRunner(c)
+	// ops := []txn.Op{{
+	// 	C:      ArbolRubrosCollection,
+	// 	Id:     rubroHijo.Id,
+	// 	Assert: "d-",
+	// 	Insert: rubroHijo,
+	// }, {
+	// 	C:      ArbolRubrosCollection,
+	// 	Id:     rubroPadre.Id,
+	// 	Assert: "d+",
+	// 	Update: bson.D{{"$set", bson.D{{"hijos", rubroPadre.Hijos}}}},
+	// }}
+	// id := bson.NewObjectId() // Optional
+	// err := runner.Run(ops, id, nil)
+	// return err
+
+	// return nil
 }

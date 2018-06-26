@@ -638,6 +638,7 @@ func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado m
 		//variables
 		session, _ := db.GetSession()
 		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
+		var apropiacionesCdp []*models.ArbolRubroApropiacion
 		if err != nil {
 			panic(err.Error())
 		}
@@ -658,8 +659,11 @@ func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado m
 					}
 				}
 			}
-			session, _ := db.GetSession()
+
+			apropiacionesCdp = append(apropiacionesCdp, apropiacionPadre)
+
 			if apropiacionPadre.Padre != "" {
+				session, _ = db.GetSession()
 				apropiacionPadre, err = models.GetArbolRubroApropiacionById(session, apropiacionPadre.Padre, ue, vigencia)
 			} else {
 				apropiacionPadre = nil
@@ -669,7 +673,12 @@ func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado m
 				panic(err.Error())
 			}
 			beego.Info("Apr ", apropiacionPadre)
-
+		}
+		session, _ = db.GetSession()
+		err = models.CrearEstrctTransaccion(session, apropiacionesCdp, vigencia, ue)
+		if err != nil {
+			beego.Error("Error en transacción de arbolRbubroApropiacion")
+			panic(err.Error())
 		}
 
 	}).Catch(func(e try.E) {
