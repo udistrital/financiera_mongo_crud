@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
@@ -429,15 +430,14 @@ func (j *ArbolRubroApropiacionController) RegistrarCdp() {
 
 			if len(rubroApropiacion.Movimientos) == 0 {
 				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
+				rubroApropiacion.Movimientos[cdpData["MesRegistro"].(string)] = make(map[string]float64)
 			}
 
 			nuevoValor["mes_cdp"] = v.(map[string]interface{})["Valor"].(float64)
 			nuevoValor["total_cdp"] = v.(map[string]interface{})["Valor"].(float64)
 
-			rubroApropiacion.Movimientos[cdpData["MesRegistro"].(string)] = nuevoValor
 			session, _ = db.GetSession()
-			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
-			prograpacionValores(rubroApropiacion.Padre, cdpData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
+			prograpacionValores(rubroApropiacion.Id, cdpData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
@@ -578,7 +578,7 @@ func (j *ArbolRubroApropiacionController) RegistrarRp() {
 		for _, v := range anulacionData["Afectacion"].([]interface{}) {
 			rubro := v.(map[string]interface{})["Rubro"].(string)
 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
-			vigencia := anulacionData["Vigencia"].(string)
+			vigencia := strconv.Itoa(int(anulacionData["Vigencia"].(float64)))
 
 			session, _ := db.GetSession()
 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
@@ -592,11 +592,8 @@ func (j *ArbolRubroApropiacionController) RegistrarRp() {
 			nuevoValor["mes_rp"] = v.(map[string]interface{})["Valor"].(float64)
 			nuevoValor["total_rp"] = v.(map[string]interface{})["Valor"].(float64)
 
-			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["mes_rp"] = v.(map[string]interface{})["Valor"].(float64)
-			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["total_rp"] += v.(map[string]interface{})["Valor"].(float64)
 			session, _ = db.GetSession()
-			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
-			prograpacionValores(rubroApropiacion.Padre, anulacionData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
+			prograpacionValores(rubroApropiacion.Id, anulacionData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
 		}
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
 	}).Catch(func(e try.E) {
@@ -608,42 +605,13 @@ func (j *ArbolRubroApropiacionController) RegistrarRp() {
 
 func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado map[string]float64) (err error) {
 	try.This(func() {
-		// session, _ := db.GetSession()
-		// apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
 
-		// if err != nil {
-		// 	panic(err.Error())
-		// }
-
-		// if len(apropiacionPadre.Movimientos) == 0 {
-		// 	apropiacionPadre.Movimientos = make(map[string]map[string]float64)
-		// 	apropiacionPadre.Movimientos[mes] = valorPrograpado
-		// } else {
-		// 	for key, value := range valorPrograpado {
-		// 		if apropiacionPadre.Movimientos[mes][key] != 0 {
-		// 			apropiacionPadre.Movimientos[mes][key] += value
-		// 		} else {
-		// 			apropiacionPadre.Movimientos[mes][key] = value
-		// 		}
-		// 	}
-		// }
-
-		// session, _ = db.GetSession()
-		// models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
-
-		// if apropiacionPadre.Padre != "" {
-		// 	prograpacionValores(apropiacionPadre.Padre, mes, vigencia, ue, valorPrograpado)
-		// }
-
-		//variables
 		session, _ := db.GetSession()
 		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, padreRubro, ue, vigencia)
 		var apropiacionesCdp []*models.ArbolRubroApropiacion
 		if err != nil {
 			panic(err.Error())
 		}
-
-		//models.UpdateArbolRubroApropiacion(session, *apropiacionPadre, apropiacionPadre.Id, apropiacionPadre.Unidad_ejecutora, vigencia)
 
 		for apropiacionPadre != nil {
 
@@ -653,7 +621,11 @@ func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado m
 			} else {
 				for key, value := range valorPrograpado {
 					if apropiacionPadre.Movimientos[mes][key] != 0 {
-						apropiacionPadre.Movimientos[mes][key] += value
+						if strings.Contains(key, "mes") {
+							apropiacionPadre.Movimientos[mes][key] = value
+						} else {
+							apropiacionPadre.Movimientos[mes][key] += value
+						}
 					} else {
 						apropiacionPadre.Movimientos[mes][key] = value
 					}
@@ -672,10 +644,10 @@ func prograpacionValores(padreRubro, mes, vigencia, ue string, valorPrograpado m
 			if err != nil {
 				panic(err.Error())
 			}
-			beego.Info("Apr ", apropiacionPadre)
+
 		}
 		session, _ = db.GetSession()
-		err = models.CrearEstrctTransaccion(session, apropiacionesCdp, vigencia, ue)
+		err = models.CrearEstrctTransaccion(session, apropiacionesCdp, ue, vigencia)
 		if err != nil {
 			beego.Error("Error en transacción de arbolRbubroApropiacion")
 			panic(err.Error())

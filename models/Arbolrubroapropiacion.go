@@ -140,32 +140,13 @@ func CrearEstrctTransaccion(session *mgo.Session, estructuras []*ArbolRubroAprop
 		op := txn.Op{
 			C:      ArbolRubroApropiacionCollection + "_" + vigencia + "_" + ue,
 			Id:     estructura.Id,
-			Assert: "d-",
-			Update: estructura,
+			Assert: "d+",
+			Update: bson.D{{"$set", bson.D{{"movimientos", estructura.Movimientos}}}},
 		}
-		fmt.Println("estructura: ", estructura)
 		ops = append(ops, op)
 	}
-	fmt.Println("ops: ", ops)
 	id := bson.NewObjectId()
 	err := runner.Run(ops, id, nil)
-	return err
-	// c := db.Cursor(session, ArbolRubrosCollection)
-	// runner := txn.NewRunner(c)
-	// ops := []txn.Op{{
-	// 	C:      ArbolRubrosCollection,
-	// 	Id:     rubroHijo.Id,
-	// 	Assert: "d-",
-	// 	Insert: rubroHijo,
-	// }, {
-	// 	C:      ArbolRubrosCollection,
-	// 	Id:     rubroPadre.Id,
-	// 	Assert: "d+",
-	// 	Update: bson.D{{"$set", bson.D{{"hijos", rubroPadre.Hijos}}}},
-	// }}
-	// id := bson.NewObjectId() // Optional
-	// err := runner.Run(ops, id, nil)
-	// return err
 
-	// return nil
+	return err
 }
