@@ -556,6 +556,7 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) {
 		}
 	}).Catch(func(e try.E) {
 		beego.Error("catch error registrar valores: ", e)
+		panic(e)
 	})
 }
 
