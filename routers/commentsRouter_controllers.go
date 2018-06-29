@@ -137,14 +137,6 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
 		beego.ControllerComments{
-			Method: "RegistraAnulacionCdp",
-			Router: `AnulacionCdp/`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
-		beego.ControllerComments{
 			Method: "RegistrarApropiacionInicial",
 			Router: `RegistrarApropiacionInicial/:vigencia`,
 			AllowHTTPMethods: []string{"post"},
@@ -153,24 +145,8 @@ func init() {
 
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
 		beego.ControllerComments{
-			Method: "RegistrarCdp",
-			Router: `RegistrarCdp/`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
-		beego.ControllerComments{
 			Method: "RegistrarMovimiento",
 			Router: `RegistrarMovimiento/:tipoPago`,
-			AllowHTTPMethods: []string{"post"},
-			MethodParams: param.Make(),
-			Params: nil})
-
-	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
-		beego.ControllerComments{
-			Method: "RegistrarRp",
-			Router: `RegistrarRp/`,
 			AllowHTTPMethods: []string{"post"},
 			MethodParams: param.Make(),
 			Params: nil})

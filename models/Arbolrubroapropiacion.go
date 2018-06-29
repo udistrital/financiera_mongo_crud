@@ -99,7 +99,6 @@ func GetArbolRubroApropiacionById(session *mgo.Session, id, ue, vigencia string)
 	defer session.Close()
 	var arbolRubroApropiacion *ArbolRubroApropiacion
 	err := c.Find(bson.M{"_id": id}).One(&arbolRubroApropiacion)
-	fmt.Println(arbolRubroApropiacion, " | ", err)
 	return arbolRubroApropiacion, err
 }
 
@@ -132,10 +131,10 @@ func GetRaicesApropiacion(session *mgo.Session, ue, vigencia string) ([]ArbolRub
 	return roots, err
 }
 
-func CrearEstrctTransaccion(session *mgo.Session, estructuras []*ArbolRubroApropiacion, ue, vigencia string) error {
-	var ops []txn.Op
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
-	runner := txn.NewRunner(c)
+func EstrctTransaccionArbolApropiacion(session *mgo.Session, estructuras []*ArbolRubroApropiacion, ue, vigencia string) (ops []txn.Op, err error) {
+	//var ops []txn.Op
+	// c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
+	// runner := txn.NewRunner(c)
 	for _, estructura := range estructuras {
 		op := txn.Op{
 			C:      ArbolRubroApropiacionCollection + "_" + vigencia + "_" + ue,
@@ -145,8 +144,8 @@ func CrearEstrctTransaccion(session *mgo.Session, estructuras []*ArbolRubroAprop
 		}
 		ops = append(ops, op)
 	}
-	id := bson.NewObjectId()
-	err := runner.Run(ops, id, nil)
+	// id := bson.NewObjectId()
+	// err = runner.Run(ops, id, nil)
 
-	return err
+	return ops, err
 }
