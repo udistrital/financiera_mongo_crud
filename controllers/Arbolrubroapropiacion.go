@@ -478,6 +478,9 @@ func crearNuevaApropiacion(actualRubro models.ArbolRubros, aprId string, nuevaAp
 // 	j.ServeJSON()
 // }
 
+var tipoTotal string
+var tipoMovimiento string
+
 // @Title RegistrarMovimiento
 // @Description Crear y propagar Valores de movimientos en arbol apropiaciones
 // @Param	body		body 	models.ArbolRubroApropiacion true "Body para la movimiento en arbol apropiaciones"
@@ -488,19 +491,20 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	var dataValor map[string]interface{}
 
 	try.This(func() {
-
+		tipoTotal = "TotalComprometido"
 		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &dataValor); err != nil {
 			panic(err.Error())
 		}
 
-		switch tipoMovimiento := j.GetString(":tipoPago"); tipoMovimiento {
+		switch tipoMovimiento = j.GetString(":tipoPago"); tipoMovimiento {
 		//rp
 		case "cdp":
-			registrarValores(dataValor, "total_cdp", "mes_cdp", tipoMovimiento)
+			registrarValores(dataValor, "total_cdp", "mes_cdp")
 		case "rp":
-			registrarValores(dataValor, "total_rp", "mes_rp", tipoMovimiento)
+			registrarValores(dataValor, "total_rp", "mes_rp")
 		case "anulacion":
-			registrarValores(dataValor, "total_anulado", "mes_anulado", tipoMovimiento)
+			tipoTotal = "TotalAnulado"
+			registrarValores(dataValor, "total_anulado", "mes_anulado")
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
@@ -511,12 +515,12 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	j.ServeJSON()
 }
 
-func registrarValores(dataValor map[string]interface{}, total, mes, tipo string) (err error) {
+func registrarValores(dataValor map[string]interface{}, total, mes string) (err error) {
 	try.This(func() {
 
 		// beego.Info("datavalor: ", dataValor)
 		var (
-			op  interface{}   // operación para la transacción
+			op  []interface{} // operación para la transacción
 			ops []interface{} // todas las operaciones de la transacción
 		)
 
@@ -553,8 +557,8 @@ func registrarValores(dataValor map[string]interface{}, total, mes, tipo string)
 			//ops = append(ops, op)
 		}
 
-		op, err = registrarDocumentoMovimiento(dataValor, total, mes, tipo)
-		ops = append(ops, op)
+		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
+		ops = append(ops, op...)
 		beego.Info("ops........ controller ", ops)
 
 		session, _ := db.GetSession()
@@ -566,21 +570,36 @@ func registrarValores(dataValor map[string]interface{}, total, mes, tipo string)
 	return err
 }
 
-func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes, tipo string) (op interface{}, err error) {
+func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes string) (ops []interface{}, err error) {
 	try.This(func() {
 		var rubrosAfecta []map[string]interface{}
+
+		documentoPadre, _ := dataValor["Disponibilidad"].(float64)
+
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
-			rubroAfecta.(map[string]interface{})["TotalAnulado"] = 0
-			rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0
+			rubroAfecta.(map[string]interface{})["TotalAnulado"] = 0.0
+			rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0.0
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
 		}
+
 		movimiento := models.MovimientoCdp{
-			IDPsql:       strconv.Itoa(int(dataValor["Id"].(float64))),
-			RubrosAfecta: rubrosAfecta,
-			Vigencia:     dataValor["Vigencia"].(string),
+			IDPsql:         strconv.Itoa(int(dataValor["Id"].(float64))),
+			RubrosAfecta:   rubrosAfecta,
+			Tipo:           tipoMovimiento,
+			Vigencia:       dataValor["Vigencia"].(string),
+			DocumentoPadre: strconv.Itoa(int(documentoPadre)), // si el documento padre esta vacio (no tiene) el valor guardado es 0 (?)
 		}
 		session, _ := db.GetSession()
-		op, err = models.EstrctTransaccionMov(session, &movimiento)
+		op, err := models.EstrctTransaccionMov(session, &movimiento)
+		ops = append(ops, op)
+		if movimiento.DocumentoPadre != "0" {
+			op, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento)
+			if err != nil {
+				panic(err.Error())
+			}
+			ops = append(ops, op)
+		}
+
 		if err != nil {
 			panic(err.Error())
 		}
@@ -588,7 +607,32 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes, 
 		beego.Error("error en registrar RP ", e)
 		panic(e)
 	})
-	return op, err
+	return ops, err
+}
+
+func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (op interface{}, err error) {
+	session, _ := db.GetSession()
+	padre := models.GetMovimientoByPsqlId(session, documentoPadre)
+	afetcacionWalk(&Rp, padre)
+	beego.Info("Cdp aft ", padre)
+	session, _ = db.GetSession()
+	op, err = models.EstrctUpdateTransaccionMov(session, padre)
+	if err != nil {
+		panic(err.Error())
+	}
+	return
+}
+
+func afetcacionWalk(Rp, Cdp *models.MovimientoCdp) {
+
+	for _, rubroRp := range Rp.RubrosAfecta {
+		for i := 0; i < len(Cdp.RubrosAfecta); i++ {
+			if Cdp.RubrosAfecta[i]["Rubro"].(string) == rubroRp["Rubro"].(string) {
+				Cdp.RubrosAfecta[i][tipoTotal] = Cdp.RubrosAfecta[i][tipoTotal].(float64) + rubroRp["Valor"].(float64)
+			}
+		}
+	}
+
 }
 
 func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[string]float64) (ops []interface{}, err error) {
