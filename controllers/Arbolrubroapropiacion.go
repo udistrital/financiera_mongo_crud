@@ -568,15 +568,14 @@ func registrarCdp(dataValor map[string]interface{}, total, mes string) (op inter
 	try.This(func() {
 		var rubrosAfecta []map[string]interface{}
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
+			rubroAfecta.(map[string]interface{})["TotalAnulado"] = 0
+			rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
 		}
 		movimiento := models.MovimientoCdp{
-			IDPsql:            strconv.Itoa(int(dataValor["Id"].(float64))),
-			RubrosAfecta:      rubrosAfecta,
-			ValorOriginal:     0,
-			TotalAnulado:      0,
-			TotalComprometido: 0,
-			Vigencia:          dataValor["Vigencia"].(string),
+			IDPsql:       strconv.Itoa(int(dataValor["Id"].(float64))),
+			RubrosAfecta: rubrosAfecta,
+			Vigencia:     dataValor["Vigencia"].(string),
 		}
 		session, _ := db.GetSession()
 		op, err = models.EstrctTransaccionMov(session, &movimiento)

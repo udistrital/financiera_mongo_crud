@@ -9,13 +9,13 @@ import (
 const MovimientosCollection = "movimientos"
 
 type MovimientoCdp struct {
-	ID                string                   `json:"_id" bson:"_id,omitempty"`
-	IDPsql            string                   `json:"idpsql"`
-	RubrosAfecta      []map[string]interface{} `json:"rubros_afecta"`
-	ValorOriginal     float64                  `json:"valor_original"`
-	TotalAnulado      float64                  `json:"total_anulado"`
-	TotalComprometido float64                  `json:"total_comprometido"`
-	Vigencia          string                   `json:"vigencia"`
+	ID            string                   `json:"_id" bson:"_id,omitempty"`
+	IDPsql        string                   `json:"idpsql"`
+	RubrosAfecta  []map[string]interface{} `json:"rubros_afecta"`
+	ValorOriginal float64                  `json:"valor_original"`
+	// TotalAnulado      float64                  `json:"total_anulado"`
+	// TotalComprometido float64                  `json:"total_comprometido"`
+	Vigencia string `json:"vigencia"`
 }
 
 func EstrctTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops txn.Op, err error) {
