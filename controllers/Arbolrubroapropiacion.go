@@ -496,11 +496,11 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 		switch tipoMovimiento := j.GetString(":tipoPago"); tipoMovimiento {
 		//rp
 		case "cdp":
-			registrarValores(dataValor, "total_cdp", "mes_cdp")
+			registrarValores(dataValor, "total_cdp", "mes_cdp", tipoMovimiento)
 		case "rp":
-			registrarValores(dataValor, "total_rp", "mes_rp")
+			registrarValores(dataValor, "total_rp", "mes_rp", tipoMovimiento)
 		case "anulacion":
-			registrarValores(dataValor, "total_anulado", "mes_anulado")
+			registrarValores(dataValor, "total_anulado", "mes_anulado", tipoMovimiento)
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
@@ -511,7 +511,7 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	j.ServeJSON()
 }
 
-func registrarValores(dataValor map[string]interface{}, total, mes string) (err error) {
+func registrarValores(dataValor map[string]interface{}, total, mes, tipo string) (err error) {
 	try.This(func() {
 
 		// beego.Info("datavalor: ", dataValor)
@@ -552,9 +552,11 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			}
 			//ops = append(ops, op)
 		}
-		op, err = registrarCdp(dataValor, total, mes)
+
+		op, err = registrarDocumentoMovimiento(dataValor, total, mes, tipo)
 		ops = append(ops, op)
 		beego.Info("ops........ controller ", ops)
+
 		session, _ := db.GetSession()
 		models.RegistrarMovimiento(session, ops)
 	}).Catch(func(e try.E) {
@@ -564,7 +566,7 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 	return err
 }
 
-func registrarCdp(dataValor map[string]interface{}, total, mes string) (op interface{}, err error) {
+func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes, tipo string) (op interface{}, err error) {
 	try.This(func() {
 		var rubrosAfecta []map[string]interface{}
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
