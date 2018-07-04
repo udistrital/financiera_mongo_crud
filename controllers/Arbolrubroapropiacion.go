@@ -14,29 +14,12 @@ import (
 	_ "gopkg.in/mgo.v2"
 )
 
-// Operaciones Crud ArbolRubroApropiacion2018
+// ArbolRubroApropiacionController struct del controlador, utiliza los atributos y funciones de un controlador de beego
 type ArbolRubroApropiacionController struct {
 	beego.Controller
 }
 
-// @Title GetAll
-// @Description get all objects
-// @Success 200 ArbolRubroApropiacion2018 models.ArbolRubroApropiacion2018
-// @Failure 403 :objectId is empty
-// @router / [get]
-func (j *ArbolRubroApropiacionController) GetAll() {
-	session, _ := db.GetSession()
-	obs := models.GetAllArbolRubroApropiacion2018s(session)
-
-	if len(obs) == 0 {
-		j.Data["json"] = []string{}
-	} else {
-		j.Data["json"] = &obs
-	}
-
-	j.ServeJSON()
-}
-
+// Método Get de HTTP
 // @Title Get
 // @Description get ArbolRubroApropiacion2018 by nombre
 // @Param	nombre		path 	string	true		"El nombre de la ArbolRubroApropiacion2018 a consultar"
@@ -59,7 +42,7 @@ func (j *ArbolRubroApropiacionController) Get() {
 	j.ServeJSON()
 }
 
-// @Title Borrar ArbolRubroApropiacion2018
+// @Title Delete ArbolRubroApropiacion2018
 // @Description Borrar ArbolRubroApropiacion2018
 // @Param	objectId		path 	string	true		"El ObjectId del objeto que se quiere borrar"
 // @Success 200 {string} ok
@@ -253,7 +236,7 @@ func getHijoApropiacion(id, ue, vigencia string) map[string]interface{} {
 	return hijo
 }
 
-// @Title RegistrarApropiacionInicial
+// @Title RegistrarApropiacionInicial...
 // @Description Crear ArbolRubroApropiacion2018
 // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de ApropiacionInicial"
 // @Success 200 {int} ArbolRubroApropiacion2018.Id
@@ -277,7 +260,7 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 				panic(err.Error())
 			}
 
-			nuevaApropiacion := models.ArbolRubroApropiacion2018{
+			nuevaApropiacion := models.ArbolRubroApropiacion{
 				Id:                  codigoRubro,
 				Idpsql:              strconv.Itoa(int(dataApropiacion["Id"].(float64))),
 				Nombre:              dataApropiacion["Nombre"].(string),
@@ -291,7 +274,7 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 			if nuevaApropiacion.Padre == "" { // Si el rubro actual es una raíz, se hace un registro sencillo
 				session, _ = db.GetSession()
 				beego.Info("Es raíz")
-				models.RegistrarApropiacion(session, nuevaApropiacion, unidadEjecutora, vigencia)
+				models.InsertArbolRubroApropiacion(session, &nuevaApropiacion, unidadEjecutora, vigencia)
 			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
 				if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Idpsql, nuevaApropiacion.Apropiacion_inicial); err != nil {
 					beego.Error("error en construir rama: ", err.Error())

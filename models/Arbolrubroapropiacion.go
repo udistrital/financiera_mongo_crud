@@ -10,20 +10,13 @@ import (
 	"gopkg.in/mgo.v2/txn"
 )
 
+// ArbolRubroApropiacion2018Collection constante para la colección
 const ArbolRubroApropiacion2018Collection = "arbolrubroapropiacion2018"
+
+// ArbolRubroApropiacionCollection constante para la colección
 const ArbolRubroApropiacionCollection = "arbolrubroapropiacion"
 
-type ArbolRubroApropiacion2018 struct {
-	Id                  string   `json:"_id" bson:"_id,omitempty"`
-	Idpsql              string   `json:"idpsql"`
-	Nombre              string   `json:"nombre"`
-	Descripcion         string   `json:"descripcion"`
-	Unidad_ejecutora    string   `json:"unidad_ejecutora"`
-	Padre               string   `json:"padre"`
-	Hijos               []string `json:"hijos"`
-	Apropiacion_inicial int      `json:"apropiacion_inicial"`
-}
-
+// ArbolRubroApropiacion es la estructura del documento que se va a registrar
 type ArbolRubroApropiacion struct {
 	Id                  string                        `json:"_id" bson:"_id,omitempty"`
 	Idpsql              string                        `json:"idpsql"`
@@ -53,6 +46,7 @@ type ArbolRubroApropiacion struct {
 // 	Mes_giro                float64 `json:"mes_giro"`
 // }
 
+// UpdateArbolRubroApropiacion Update function to ArbolRubroApropiacion
 func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, ue, vigencia string) error {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
@@ -67,14 +61,7 @@ func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, 
 
 }
 
-func RegistrarApropiacion(session *mgo.Session, j ArbolRubroApropiacion2018, ue, vigencia string) {
-	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
-	defer session.Close()
-	if err := c.Insert(j); err != nil {
-		panic(err)
-	}
-}
-
+// InsertArbolRubroApropiacion Register function to ArbolRubroApropiacion
 func InsertArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion, ue, vigencia string) {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
@@ -82,18 +69,7 @@ func InsertArbolRubroApropiacion(session *mgo.Session, j *ArbolRubroApropiacion,
 
 }
 
-func GetAllArbolRubroApropiacion2018s(session *mgo.Session) []ArbolRubroApropiacion2018 {
-	c := db.Cursor(session, ArbolRubroApropiacion2018Collection)
-	defer session.Close()
-	fmt.Println("Getting all arbolrubroapropiacion2018s")
-	var arbolrubroapropiacion2018s []ArbolRubroApropiacion2018
-	err := c.Find(bson.M{}).All(&arbolrubroapropiacion2018s)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return arbolrubroapropiacion2018s
-}
-
+// GetArbolRubroApropiacionById Obtener un documento por el id
 func GetArbolRubroApropiacionById(session *mgo.Session, id, ue, vigencia string) (*ArbolRubroApropiacion, error) {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
 	defer session.Close()
