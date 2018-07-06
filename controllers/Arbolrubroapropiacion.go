@@ -491,20 +491,26 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	var dataValor map[string]interface{}
 
 	try.This(func() {
-		tipoTotal = "TotalComprometido"
+
 		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &dataValor); err != nil {
 			panic(err.Error())
 		}
 
 		switch tipoMovimiento = j.GetString(":tipoPago"); tipoMovimiento {
 		//rp
-		case "cdp":
+		case "Cdp":
+			tipoTotal = "TotalComprometidoCdp"
 			registrarValores(dataValor, "total_cdp", "mes_cdp")
-		case "rp":
+		case "Rp":
+			tipoTotal = "TotalComprometidoRp"
 			registrarValores(dataValor, "total_rp", "mes_rp")
-		case "anulacion":
-			tipoTotal = "TotalAnulado"
+		case "AnulacionRp":
+			tipoTotal = "TotalAnuladoRp"
 			registrarValores(dataValor, "total_anulado", "mes_anulado")
+		case "AnulacionCdp":
+			tipoTotal = "TotalAnuladoCdp"
+			registrarValores(dataValor, "total_anulado", "mes_anulado")
+
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
@@ -559,7 +565,6 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 
 		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
 		ops = append(ops, op...)
-		beego.Info("ops........ controller ", ops)
 
 		session, _ := db.GetSession()
 		models.RegistrarMovimiento(session, ops)
@@ -577,8 +582,9 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		documentoPadre, _ := dataValor["Disponibilidad"].(float64)
 
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
-			rubroAfecta.(map[string]interface{})["TotalAnulado"] = 0.0
-			rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0.0
+			rubroAfecta.(map[string]interface{})[tipoTotal] = 0.0
+			//rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0.0
+
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
 		}
 
@@ -591,15 +597,14 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		}
 		session, _ := db.GetSession()
 		op, err := models.EstrctTransaccionMov(session, &movimiento)
-		ops = append(ops, op)
-		if movimiento.DocumentoPadre != "0" {
-			op, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento)
-			if err != nil {
-				panic(err.Error())
-			}
-			ops = append(ops, op)
+		if err != nil {
+			panic(err.Error())
 		}
+		ops = append(ops, op)
 
+		opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento) // opp son los movimientos a propagar en la tx de mongodb
+
+		ops = append(ops, opp...)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -610,25 +615,46 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 	return ops, err
 }
 
-func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (op interface{}, err error) {
+func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (op []interface{}, err error) {
 	session, _ := db.GetSession()
-	padre := models.GetMovimientoByPsqlId(session, documentoPadre)
-	afetcacionWalk(&Rp, padre)
-	beego.Info("Cdp aft ", padre)
-	session, _ = db.GetSession()
-	op, err = models.EstrctUpdateTransaccionMov(session, padre)
-	if err != nil {
-		panic(err.Error())
+	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre)
+	beego.Info("Padre ", padre)
+
+	if padre != nil {
+		afetcacionWalk(&Rp, padre)
+		beego.Info("Cdp aft ", padre)
+		session, _ = db.GetSession()
+		opM, err := models.EstrctUpdateTransaccionMov(session, padre) //opM es la tx del movimiento a actualizar
+		if err != nil {
+			panic(err.Error())
+		}
+
+		op = append(op, opM)
+
+		beego.Info("Entro for")
+		opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp)
+		if err != nil {
+			panic(err.Error())
+		}
+		op = append(op, opp...)
+
+	}
+	for _, imp := range op {
+		beego.Info("ops........ controller ", imp, "\n")
+
 	}
 	return
 }
 
 func afetcacionWalk(Rp, Cdp *models.MovimientoCdp) {
-
 	for _, rubroRp := range Rp.RubrosAfecta {
 		for i := 0; i < len(Cdp.RubrosAfecta); i++ {
 			if Cdp.RubrosAfecta[i]["Rubro"].(string) == rubroRp["Rubro"].(string) {
-				Cdp.RubrosAfecta[i][tipoTotal] = Cdp.RubrosAfecta[i][tipoTotal].(float64) + rubroRp["Valor"].(float64)
+				if Cdp.RubrosAfecta[i][tipoTotal] != nil {
+					Cdp.RubrosAfecta[i][tipoTotal] = Cdp.RubrosAfecta[i][tipoTotal].(float64) + rubroRp["Valor"].(float64)
+				} else {
+					Cdp.RubrosAfecta[i][tipoTotal] = rubroRp["Valor"].(float64)
+				}
 			}
 		}
 	}
