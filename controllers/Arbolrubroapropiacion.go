@@ -582,7 +582,7 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		documentoPadre, _ := dataValor["Disponibilidad"].(float64)
 
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
-			rubroAfecta.(map[string]interface{})[tipoTotal] = 0.0
+			//rubroAfecta.(map[string]interface{})[tipoTotal] = 0.0
 			//rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0.0
 
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
@@ -620,6 +620,7 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (o
 	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre)
 	beego.Info("Padre ", padre)
 
+	
 	if padre != nil {
 		afetcacionWalk(&Rp, padre)
 		beego.Info("Cdp aft ", padre)
