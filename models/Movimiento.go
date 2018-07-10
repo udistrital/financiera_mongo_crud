@@ -24,11 +24,11 @@ type MovimientoCdp struct {
 }
 
 // GetMovimientoByPsqlId Obtener un documento por el idpsql
-func GetMovimientoByPsqlId(session *mgo.Session, id string) (*MovimientoCdp, error) {
+func GetMovimientoByPsqlId(session *mgo.Session, id, tipo string) (*MovimientoCdp, error) {
 	c := db.Cursor(session, MovimientosCollection)
 	defer session.Close()
 	var movimientoCdp *MovimientoCdp
-	err := c.Find(bson.M{"idpsql": id}).One(&movimientoCdp)
+	err := c.Find(bson.M{"idpsql": id, "tipo": tipo}).One(&movimientoCdp)
 	return movimientoCdp, err
 }
 

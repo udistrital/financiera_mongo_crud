@@ -11,7 +11,6 @@ import (
 	"github.com/manucorporat/try"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"github.com/udistrital/financiera_mongo_crud/models"
-	_ "gopkg.in/mgo.v2"
 )
 
 // ArbolRubroApropiacionController struct del controlador, utiliza los atributos y funciones de un controlador de beego
@@ -213,6 +212,9 @@ func (j *ArbolRubroApropiacionController) RaicesArbolApropiacion() {
 	j.ServeJSON()
 }
 
+// Obtiene y devuelve el nodo hijo de la apropiación, devolviendolo en un objeto tipo json (map[string]interface{})
+// Se devuelve un objeto de este tipo y no de models con el fin de utilizar la estructura de json utilizada ya en el cliente
+// y no tener que hacer grandes modificaciones en el
 func getHijoApropiacion(id, ue, vigencia string) map[string]interface{} {
 	session, _ := db.GetSession()
 	rubroHijo, _ := models.GetArbolRubroApropiacionById(session, id, ue, vigencia)
@@ -297,7 +299,7 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 
 func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int) error {
 	var (
-		/*padreRubro,*/ actualRubro         models.ArbolRubros
+		actualRubro                         models.ArbolRubros
 		padreApropiacion, actualApropiacion *models.ArbolRubroApropiacion
 		err                                 error
 	)
@@ -382,110 +384,18 @@ func crearNuevaApropiacion(actualRubro models.ArbolRubros, aprId string, nuevaAp
 	return actualApropiacion
 }
 
-// // @Title RegistrarCdp
-// // @Description Crear RegistrarCdp, este servicio se utiliza sólo para registrar por primera vez el CDP
-// // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de RegistrarCdp"
-// // @Success 200 {int} ArbolRubroApropiacion2018.Id
-// // @Failure 403 body is empty
-// // @router RegistrarCdp/ [post]
-// func (j *ArbolRubroApropiacionController) RegistrarCdp() {
-// 	try.This(func() {
-// 		var cdpData map[string]interface{}
-// 		err := json.Unmarshal(j.Ctx.Input.RequestBody, &cdpData)
-
-// 		if err != nil {
-// 			panic(err.Error())
-// 		}
-
-// 		for _, v := range cdpData["Afectacion"].([]interface{}) {
-// 			rubro := v.(map[string]interface{})["Rubro"].(string)
-// 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
-// 			vigencia := strconv.Itoa(int(cdpData["Vigencia"].(float64)))
-
-// 			session, _ := db.GetSession()
-// 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
-
-// 			if err != nil {
-// 				panic(err.Error())
-// 			}
-
-// 			nuevoValor := make(map[string]float64)
-
-// 			if len(rubroApropiacion.Movimientos) == 0 {
-// 				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
-// 				rubroApropiacion.Movimientos[cdpData["MesRegistro"].(string)] = make(map[string]float64)
-// 			}
-
-// 			nuevoValor["mes_cdp"] = v.(map[string]interface{})["Valor"].(float64)
-// 			nuevoValor["total_cdp"] = v.(map[string]interface{})["Valor"].(float64)
-
-// 			session, _ = db.GetSession()
-// 			prograpacionValores(rubroApropiacion.Id, cdpData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
-// 		}
-
-// 		j.Data["json"] = map[string]interface{}{"Type": "success"}
-// 	}).Catch(func(e try.E) {
-// 		beego.Error("catch error registrar cdp: ", e)
-// 		j.Data["json"] = map[string]interface{}{"Type": "error"}
-// 	})
-// 	j.ServeJSON()
-// }
-
-// // @Title AnulacionCdp
-// // @Description Crear y propagar anulaciones de CDP
-// // @Param	body		body 	models.ArbolRubroApropiacion true "Body para la creación de anulaciones"
-// // @Success 200 {string} success
-// // @Failure 403 body is empty
-// // @router AnulacionCdp/ [post]
-// func (j *ArbolRubroApropiacionController) RegistraAnulacionCdp() {
-// 	try.This(func() {
-// 		var anulacionData map[string]interface{}
-
-// 		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &anulacionData); err != nil {
-// 			panic(err.Error())
-// 		}
-
-// 		beego.Info(anulacionData)
-
-// 		for _, v := range anulacionData["Afectacion"].([]interface{}) {
-// 			rubro := v.(map[string]interface{})["Rubro"].(string)
-// 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
-// 			vigencia := anulacionData["Vigencia"].(string)
-
-// 			session, _ := db.GetSession()
-// 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
-
-// 			if err != nil {
-// 				panic(err.Error())
-// 			}
-
-// 			nuevoValor := make(map[string]float64)
-
-// 			nuevoValor["mes_anulado"] = v.(map[string]interface{})["Valor"].(float64)
-// 			nuevoValor["total_anulado"] = v.(map[string]interface{})["Valor"].(float64)
-
-// 			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["mes_anulado"] = v.(map[string]interface{})["Valor"].(float64)
-// 			rubroApropiacion.Movimientos[anulacionData["MesRegistro"].(string)]["total_anulado"] += v.(map[string]interface{})["Valor"].(float64)
-// 			session, _ = db.GetSession()
-// 			models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
-// 			prograpacionValores(rubroApropiacion.Padre, anulacionData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
-// 		}
-// 		j.Data["json"] = map[string]interface{}{"Type": "success"}
-// 	}).Catch(func(e try.E) {
-// 		beego.Error("catch error registrar anulacion cdp: ", e)
-// 		j.Data["json"] = map[string]interface{}{"Type": "error"}
-// 	})
-// 	j.ServeJSON()
-// }
-
 var tipoTotal string
 var tipoMovimiento string
 
 // @Title RegistrarMovimiento
-// @Description Crear y propagar Valores de movimientos en arbol apropiaciones
-// @Param	body		body 	models.ArbolRubroApropiacion true "Body para la movimiento en arbol apropiaciones"
+// @Description Registra los movimientos (como cdp, rp, ver variable tipoMovimiento) y los propaga tanto en la colección
+// arbolrubrosapropiacion_[vigencia]_[unidad_ejecutura], como en la colección movimientos. Utiliza la función registrarValores para registrar los valores,
+// y se le envian como párametro el nombre de los movimientos que se van a guardar en el atributo movimiento de la colección arbolrubrosapropiacion,
+// al igual que se envia la variable dataValor, que son los valores del movimiento enviados desde el api_mid_financiera
+
+// @Param	body		body 	models.Object true "json de movimientos enviado desde el api_mid_financiera"
 // @Success 200 {string} success
-// @Failure 403 body is empty
+// @Failure 403 error
 // @router RegistrarMovimiento/:tipoPago [post]
 func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	var dataValor map[string]interface{}
@@ -506,10 +416,10 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 			registrarValores(dataValor, "total_rp", "mes_rp")
 		case "AnulacionRp":
 			tipoTotal = "TotalAnuladoRp"
-			registrarValores(dataValor, "total_anulado", "mes_anulado")
+			registrarValores(dataValor, "total_anulado_rp", "mes_anulado_rp")
 		case "AnulacionCdp":
 			tipoTotal = "TotalAnuladoCdp"
-			registrarValores(dataValor, "total_anulado", "mes_anulado")
+			registrarValores(dataValor, "total_anulado_cdp", "mes_anulado_cdp")
 
 		}
 
@@ -521,6 +431,12 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	j.ServeJSON()
 }
 
+// Itera sobre cada uno de los objetos que estén en el atributo Afectacion enviado desde el api_mid_financiera, que tienen la información necesaria del movimiento
+// Mientras se itera en cada uno de los elementos, se crean las variable rubro, unidadEjecutora y vigencia, para que se pueda buscar el nodo correspondiente en
+// la colección arbolrubrosapropiacion_[vigencia]_[unidadEjecutora], luego se comprueba si dicho nodo tiene movimientosAsociados a el. En caso de no tener ninguno
+// se instancia un nuevo atributo para que tenga esos valores, luego se guardan los valores enviados desde el api_mid_finciera en la variable nuevoValor y se envian
+// como parametro para la función propagarValores, la cuál propaga los valores en el arbolrubrosapropiaciones, devolviendo un arrreglo de interfaces op
+// Para la transacción que se llevara acabo,
 func registrarValores(dataValor map[string]interface{}, total, mes string) (err error) {
 	try.This(func() {
 
@@ -560,7 +476,6 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			if err != nil {
 				panic(err.Error())
 			}
-			//ops = append(ops, op)
 		}
 
 		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
@@ -615,14 +530,14 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 	return ops, err
 }
 
+// H
 func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (op []interface{}, err error) {
 	session, _ := db.GetSession()
-	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre)
+	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre, tipoMovimiento)
 	beego.Info("Padre ", padre)
 
-	
 	if padre != nil {
-		afetcacionWalk(&Rp, padre)
+		afectacionWalk(&Rp, padre)
 		beego.Info("Cdp aft ", padre)
 		session, _ = db.GetSession()
 		opM, err := models.EstrctUpdateTransaccionMov(session, padre) //opM es la tx del movimiento a actualizar
@@ -647,7 +562,14 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (o
 	return
 }
 
-func afetcacionWalk(Rp, Cdp *models.MovimientoCdp) {
+// afectacionWalk itera en todos los elementos de RubrosAfecta del apuntador rp, y luego itera en todos los elementos de RubroAfecta del apuntador RP
+// hasta encontrar los elementos que el movimiento de tipo RP afecta al CDP, en este punto se pueden dar dos acciones dependiendo de la variable tipoTotal:
+// 1. Que el movimiento aún no tenga el atributo tipoTotal registrado
+// 2. Que el movimiento ya tenga el atributo tipoTotal registrado
+// Si el movimiento aún no tiene registrado el atributo tipoTotal, se crea y se le asigna el valor que viene del RP (el cual afectaria al CDP)
+// Si el movimiento ya tiene registrado el atributo tipoTotal, se modifica su valor sumándole el que viene del RP (el cual afectaria a los correspondientes rubros del CDP)
+// Finalmente los apuntadores son modificados y continuan su proceso en la función propagarValorMovimientos
+func afectacionWalk(Rp, Cdp *models.MovimientoCdp) {
 	for _, rubroRp := range Rp.RubrosAfecta {
 		for i := 0; i < len(Cdp.RubrosAfecta); i++ {
 			if Cdp.RubrosAfecta[i]["Rubro"].(string) == rubroRp["Rubro"].(string) {
@@ -722,47 +644,3 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 
 	return ops, err
 }
-
-// // @Title RegistrarRp
-// // @Description Crear y propagar Valores de RP
-// // @Param	body		body 	models.ArbolRubroApropiacion true "Body para la creación de RP"
-// // @Success 200 {string} success
-// // @Failure 403 body is empty
-// // @router RegistrarRp/ [post]
-// func (j *ArbolRubroApropiacionController) RegistrarRp() {
-// 	try.This(func() {
-// 		var anulacionData map[string]interface{}
-
-// 		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &anulacionData); err != nil {
-// 			panic(err.Error())
-// 		}
-
-// 		beego.Info(anulacionData)
-
-// 		for _, v := range anulacionData["Afectacion"].([]interface{}) {
-// 			rubro := v.(map[string]interface{})["Rubro"].(string)
-// 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
-// 			vigencia := strconv.Itoa(int(anulacionData["Vigencia"].(float64)))
-
-// 			session, _ := db.GetSession()
-// 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
-
-// 			if err != nil {
-// 				panic(err.Error())
-// 			}
-
-// 			nuevoValor := make(map[string]float64)
-
-// 			nuevoValor["mes_rp"] = v.(map[string]interface{})["Valor"].(float64)
-// 			nuevoValor["total_rp"] = v.(map[string]interface{})["Valor"].(float64)
-
-// 			session, _ = db.GetSession()
-// 			prograpacionValores(rubroApropiacion.Id, anulacionData["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
-// 		}
-// 		j.Data["json"] = map[string]interface{}{"Type": "success"}
-// 	}).Catch(func(e try.E) {
-// 		beego.Error("catch error registrar anulacion cdp: ", e)
-// 		j.Data["json"] = map[string]interface{}{"Type": "error"}
-// 	})
-// 	j.ServeJSON()
-// }
