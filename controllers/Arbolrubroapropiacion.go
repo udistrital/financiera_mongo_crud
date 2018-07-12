@@ -386,6 +386,7 @@ func crearNuevaApropiacion(actualRubro models.ArbolRubros, aprId string, nuevaAp
 
 var tipoTotal string
 var tipoMovimiento string
+var tipoMovimientoPadre string
 
 // @Title RegistrarMovimiento
 // @Description Registra los movimientos (como cdp, rp, ver variable tipoMovimiento) y los propaga tanto en la colección
@@ -410,15 +411,19 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 		//rp
 		case "Cdp":
 			tipoTotal = "TotalComprometidoCdp"
+			tipoMovimientoPadre = "Apr"
 			registrarValores(dataValor, "total_cdp", "mes_cdp")
 		case "Rp":
 			tipoTotal = "TotalComprometidoRp"
+			tipoMovimientoPadre = "Cdp"
 			registrarValores(dataValor, "total_rp", "mes_rp")
 		case "AnulacionRp":
 			tipoTotal = "TotalAnuladoRp"
+			tipoMovimientoPadre = "Rp"
 			registrarValores(dataValor, "total_anulado_rp", "mes_anulado_rp")
 		case "AnulacionCdp":
 			tipoTotal = "TotalAnuladoCdp"
+			tipoMovimientoPadre = "Cdp"
 			registrarValores(dataValor, "total_anulado_cdp", "mes_anulado_cdp")
 
 		}
@@ -517,7 +522,7 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		}
 		ops = append(ops, op)
 
-		opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento) // opp son los movimientos a propagar en la tx de mongodb
+		opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento, tipoMovimiento) // opp son los movimientos a propagar en la tx de mongodb
 
 		ops = append(ops, opp...)
 		if err != nil {
@@ -531,9 +536,10 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 }
 
 // H
-func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (op []interface{}, err error) {
+func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp, tMovimiento string) (op []interface{}, err error) {
 	session, _ := db.GetSession()
-	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre, tipoMovimiento)
+	selectTipoMovimientoPadre(tMovimiento)
+	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre, tipoMovimientoPadre)
 	beego.Info("Padre ", padre)
 
 	if padre != nil {
@@ -548,7 +554,7 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp) (o
 		op = append(op, opM)
 
 		beego.Info("Entro for")
-		opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp)
+		opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp, tipoMovimientoPadre)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -643,4 +649,18 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 	})
 
 	return ops, err
+}
+
+func selectTipoMovimientoPadre(tipoHijo string){
+	switch tipoMovimiento = tipoHijo; tipoMovimiento {
+		//rp
+		case "Cdp":
+			tipoMovimientoPadre = "Apr"
+		case "Rp":
+			tipoMovimientoPadre = "Cdp"
+		case "AnulacionRp":
+			tipoMovimientoPadre = "Rp"
+		case "AnulacionCdp":
+			tipoMovimientoPadre = "Cdp"
+	}
 }
