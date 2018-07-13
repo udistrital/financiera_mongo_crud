@@ -21,6 +21,7 @@ type MovimientoCdp struct {
 	Tipo           string `json:"tipo"`
 	Vigencia       string `json:"vigencia"`
 	DocumentoPadre string `json:"documento_padre"`
+	FechaRegistro  string `json:"fecha_registro"`
 }
 
 // GetMovimientoByPsqlId Obtener un documento por el idpsql
