@@ -11,14 +11,15 @@ import (
 	"github.com/manucorporat/try"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"github.com/udistrital/financiera_mongo_crud/models"
-	_ "gopkg.in/mgo.v2"
+	_ "gopkg.in/mgo.v2" // Inicializa mgo para poder usar sus métodos
 )
 
-// Operaciones Crud ArbolRubros
+// ArbolRubrosController estructura para un controlador de beego
 type ArbolRubrosController struct {
 	beego.Controller
 }
 
+// GetAll función para obtener todos los objetos
 // @Title GetAll
 // @Description get all objects
 // @Success 200 ArbolRubros models.ArbolRubros
@@ -59,6 +60,7 @@ func (j *ArbolRubrosController) GetAll() {
 	j.ServeJSON()
 }
 
+// Get obtiene un elemento por su id
 // @Title Get
 // @Description get ArbolRubros by nombre
 // @Param	nombre		path 	string	true		"El nombre de la ArbolRubros a consultar"
