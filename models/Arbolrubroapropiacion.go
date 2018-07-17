@@ -36,10 +36,10 @@ func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, 
 	// Update
 	fmt.Println("id update: ", id)
 	err := c.Update(bson.M{"_id": id}, &j)
-	if err != nil {
+	/*if err != nil {
 		fmt.Println("updatw error")
 		panic(err)
-	}
+	}*/
 	return err
 
 }

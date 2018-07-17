@@ -388,6 +388,9 @@ var tipoTotal string
 var tipoMovimiento string
 var tipoMovimientoPadre string
 
+//@Title SaldoCDP
+//
+
 // @Title RegistrarMovimiento
 // @Description Registra los movimientos (como cdp, rp, ver variable tipoMovimiento) y los propaga tanto en la colección
 // arbolrubrosapropiacion_[vigencia]_[unidad_ejecutura], como en la colección movimientos. Utiliza la función registrarValores para registrar los valores,
@@ -425,7 +428,13 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 			tipoTotal = "TotalAnuladoCdp"
 			tipoMovimientoPadre = "Cdp"
 			registrarValores(dataValor, "total_anulado_cdp", "mes_anulado_cdp")
-
+		case "Adicion": //Adición a la apropiación inicial
+			tipoTotal = "AdicionApr"
+			tipoMovimientoPadre = ""
+			registrarValores(dataValor, "total_adicion", "mes_modificacion")
+		case "ModificacionApr": // traslado de apropiación
+			beego.Info("traslado de apropiación.....")
+			registrarModifacionApr(dataValor)
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
@@ -436,16 +445,32 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 	j.ServeJSON()
 }
 
-// Itera sobre cada uno de los objetos que estén en el atributo Afectacion enviado desde el api_mid_financiera, que tienen la información necesaria del movimiento
+// De acuerdo a los valores que recibe, se hacen las modificaciones en el arbolrubroapropiacion y también en la colección de movimientos
+// Parámetros: Recibe los valores correspondientes a la modificación, el mes correspondiente de la modificaicón
+func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
+	var modificacion models.ArbolRubroApropiacion
+	beego.Info("dataValor: ", dataValor)
+	try.This(func() {
+		// rubro := dataValor["Rubro"].(string)
+		// unidadEjecutora := dataValor["UnidadEjecutora"].(string)
+		// vigencia := dataValor["Vigencia"].(string)
+		beego.Info("Modificacion: ", modificacion)
+	}).Catch(func(e try.E) {
+		beego.Error("catch error registrar modificación apropiación")
+		panic(e)
+	})
+	return err
+}
+
+// Itera sobre cada uno de los objetos que estén en el atributo Afectacion enviado desde el api_mid_financiera, que tienen la información necesaria del movimiento.
 // Mientras se itera en cada uno de los elementos, se crean las variable rubro, unidadEjecutora y vigencia, para que se pueda buscar el nodo correspondiente en
 // la colección arbolrubrosapropiacion_[vigencia]_[unidadEjecutora], luego se comprueba si dicho nodo tiene movimientosAsociados a el. En caso de no tener ninguno
 // se instancia un nuevo atributo para que tenga esos valores, luego se guardan los valores enviados desde el api_mid_finciera en la variable nuevoValor y se envian
 // como parametro para la función propagarValores, la cuál propaga los valores en el arbolrubrosapropiaciones, devolviendo un arrreglo de interfaces op
-// Para la transacción que se llevara acabo,
+// Para la transacción que se llevará acabo
 func registrarValores(dataValor map[string]interface{}, total, mes string) (err error) {
 	try.This(func() {
 
-		// beego.Info("datavalor: ", dataValor)
 		var (
 			op  []interface{} // operación para la transacción
 			ops []interface{} // todas las operaciones de la transacción
@@ -651,16 +676,18 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 	return ops, err
 }
 
-func selectTipoMovimientoPadre(tipoHijo string){
+func selectTipoMovimientoPadre(tipoHijo string) {
 	switch tipoMovimiento = tipoHijo; tipoMovimiento {
-		//rp
-		case "Cdp":
-			tipoMovimientoPadre = "Apr"
-		case "Rp":
-			tipoMovimientoPadre = "Cdp"
-		case "AnulacionRp":
-			tipoMovimientoPadre = "Rp"
-		case "AnulacionCdp":
-			tipoMovimientoPadre = "Cdp"
+	//rp
+	case "Cdp":
+		tipoMovimientoPadre = "Apr"
+	case "Rp":
+		tipoMovimientoPadre = "Cdp"
+	case "AnulacionRp":
+		tipoMovimientoPadre = "Rp"
+	case "AnulacionCdp":
+		tipoMovimientoPadre = "Cdp"
+	default:
+		tipoMovimientoPadre = ""
 	}
 }
