@@ -15,8 +15,6 @@ import (
 const TransactionCollection = "transacciones"
 
 func RegistrarMovimiento(session *mgo.Session, options []interface{}) (err error) {
-	fmt.Println("Registrar movimiento....")
-
 	try.This(func() {
 		var ops []txn.Op
 		c := db.Cursor(session, TransactionCollection)

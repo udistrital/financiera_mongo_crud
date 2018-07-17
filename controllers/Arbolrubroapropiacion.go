@@ -433,7 +433,7 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 			tipoMovimientoPadre = ""
 			registrarValores(dataValor, "total_adicion", "mes_modificacion")
 		case "ModificacionApr": // traslado de apropiación
-			beego.Info("traslado de apropiación.....")
+			beego.Info("Modificación de apropiación.....")
 			registrarModifacionApr(dataValor)
 		}
 
@@ -448,18 +448,91 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 // De acuerdo a los valores que recibe, se hacen las modificaciones en el arbolrubroapropiacion y también en la colección de movimientos
 // Parámetros: Recibe los valores correspondientes a la modificación, el mes correspondiente de la modificaicón
 func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
-	var modificacion models.ArbolRubroApropiacion
-	beego.Info("dataValor: ", dataValor)
+	var ops []interface{}
+
 	try.This(func() {
-		// rubro := dataValor["Rubro"].(string)
-		// unidadEjecutora := dataValor["UnidadEjecutora"].(string)
-		// vigencia := dataValor["Vigencia"].(string)
-		beego.Info("Modificacion: ", modificacion)
+		unidadEjecutora := strconv.Itoa(int(dataValor["UnidadEjecutora"].(float64)))
+		fechaRegistro := dataValor["FechaMovimiento"].(string)
+		vigencia := strconv.Itoa(int(dataValor["Vigencia"].(float64)))
+
+		for _, v := range dataValor["Afectacion"].([]interface{}) {
+
+			value := v.(map[string]interface{}) // Convierte el elemento v en un map[string]inerface{}, para evitar una conversión constante del mismo
+			tipoMovimiento := value["TipoMovimiento"].(string)
+			if tipoMovimiento != "Adición" {
+				op := crearCdp(value, dataValor, unidadEjecutora, fechaRegistro, vigencia)
+				ops = append(ops, op)
+			}
+
+			modificacionApr := models.MovimientoCdp{
+				IDPsql:          strconv.Itoa(int(dataValor["Id"].(float64))),
+				Tipo:            tipoMovimiento,
+				Vigencia:        vigencia,
+				DocumentoPadre:  strconv.Itoa(int(value["Apropiacion"].(float64))),
+				FechaRegistro:   fechaRegistro,
+				UnidadEjecutora: unidadEjecutora,
+			}
+			modificacionApr.RubrosAfecta = append(modificacionApr.RubrosAfecta, value)
+
+			session, _ := db.GetSession()
+			op, err := models.EstrctTransaccionMov(session, &modificacionApr)
+			if err != nil {
+				panic(err.Error())
+			}
+			ops = append(ops, op)
+
+		}
+		beego.Info("ops: ", ops)
+		session, _ := db.GetSession()
+		err = models.RegistrarMovimiento(session, ops)
 	}).Catch(func(e try.E) {
 		beego.Error("catch error registrar modificación apropiación")
 		panic(e)
 	})
 	return err
+}
+
+// Crea un CDP para las modificaciones de apropiación inicial que lo necesitan
+func crearCdp(dataMovimiento map[string]interface{}, dataValor map[string]interface{}, unidadEjecutora, fechaRegistro, vigencia string) (op interface{}) {
+	var err error // error handle variable
+
+	try.This(func() {
+		rubrosAfecta := make(map[string]interface{})
+		rubrosAfecta["Rubro"] = dataMovimiento["CuentaCredito"].(string)
+		switch tipoMovimiento {
+		case "Traslado":
+			rubrosAfecta["Rubro"] = dataMovimiento["CuentaContraCredito"].(string)
+			//registrarValores(dataMovimiento)
+		case "Adición":
+			registrarValores(dataValor, "total_adicion", "mes_modificacion")
+		case "Reducción":
+			registrarValores(dataValor, "total_reduccion", "mes_modificacion")
+		case "Suspensión":
+			registrarValores(dataValor, "total_traslados", "mes_modificacion")
+		}
+
+		rubrosAfecta["Valor"] = dataMovimiento["Valor"].(float64)
+		rubrosAfecta["Apropiacion"] = strconv.Itoa(int(dataMovimiento["Apropiacion"].(float64)))
+		cdp := models.MovimientoCdp{
+			IDPsql:          strconv.Itoa(int(dataMovimiento["Disponibilidad"].(float64))),
+			Tipo:            "Cdp",
+			Vigencia:        vigencia,
+			DocumentoPadre:  "0",
+			FechaRegistro:   fechaRegistro,
+			UnidadEjecutora: unidadEjecutora,
+		}
+		cdp.RubrosAfecta = append(cdp.RubrosAfecta, rubrosAfecta)
+
+		session, _ := db.GetSession()
+		op, err = models.EstrctTransaccionMov(session, &cdp)
+		if err != nil {
+			panic(err.Error())
+		}
+	}).Catch(func(e try.E) {
+		beego.Error("catch error en crearCdp")
+		panic(e)
+	})
+	return
 }
 
 // Itera sobre cada uno de los objetos que estén en el atributo Afectacion enviado desde el api_mid_financiera, que tienen la información necesaria del movimiento.

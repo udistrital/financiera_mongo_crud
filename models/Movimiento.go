@@ -18,10 +18,11 @@ type MovimientoCdp struct {
 	ValorOriginal float64                  `json:"valor_original"`
 	// TotalAnulado      float64                  `json:"total_anulado"`
 	// TotalComprometido float64                  `json:"total_comprometido"`
-	Tipo           string `json:"tipo"`
-	Vigencia       string `json:"vigencia"`
-	DocumentoPadre string `json:"documento_padre"`
-	FechaRegistro  string `json:"fecha_registro"`
+	Tipo            string `json:"tipo"`
+	Vigencia        string `json:"vigencia"`
+	DocumentoPadre  string `json:"documento_padre"`
+	FechaRegistro   string `json:"fecha_registro"`
+	UnidadEjecutora string `json:"unidad_ejecutora"`
 }
 
 // GetMovimientoByPsqlId Obtener un documento por el idpsql
@@ -40,7 +41,6 @@ func EstrctTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops 
 		C:      MovimientosCollection,
 		Id:     estructura.ID,
 		Assert: "d-",
-		//Insert: bson.D{{"$set", bson.D{{"rubros_afecta", estructura.RubrosAfecta}}}},
 		Insert: estructura,
 	}
 	return op, err
