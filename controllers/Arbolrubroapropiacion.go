@@ -860,12 +860,7 @@ func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
 				response[key] += data
 			}
 		}
-
-		// response := map[string]interface{}{
-		// 	"adiciones": 0,
-		// 	"anulado":   0,
-		// }
-
+		response["valor_inicial"] = float64(rubro.Apropiacion_inicial)
 		if err != nil {
 			panic(err.Error())
 		}
