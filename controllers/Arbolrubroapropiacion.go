@@ -450,30 +450,13 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 		vigencia := strconv.Itoa(int(dataValor["Vigencia"].(float64)))
 		mes, _ := time.Parse("2006-01-02", fechaRegistro)
 
+		opsApr := registrarValoresModf(dataValor["Afectacion"].([]interface{}), strconv.Itoa(int(mes.Month())), vigencia, unidadEjecutora)
+
 		for _, v := range dataValor["Afectacion"].([]interface{}) {
 
 			value := v.(map[string]interface{}) // Convierte el elemento v en un map[string]inerface{}, para evitar una conversión constante del mismo
 
 			tipoMovimiento := value["TipoMovimiento"].(string)
-			switch tipoMovimiento {
-			case "Traslado":
-				//registrarValores(dataMovimiento)
-				op := crearCdp(value, unidadEjecutora, fechaRegistro, vigencia)
-				ops = append(ops, op)
-			case "Adición":
-				opTree := registrarValoresModf(value, "total_adicion", "mes_modificacion", unidadEjecutora, vigencia, strconv.Itoa(int(mes.Month())))
-				ops = append(ops, opTree...)
-			case "Reducción":
-				opTree := registrarValoresModf(value, "total_reduccion", "mes_modificacion", unidadEjecutora, vigencia, strconv.Itoa(int(mes.Month())))
-				ops = append(ops, opTree...)
-				op := crearCdp(value, unidadEjecutora, fechaRegistro, vigencia)
-				ops = append(ops, op)
-			case "Suspensión":
-				opTree := registrarValoresModf(value, "total_suspencion", "mes_modificacion", unidadEjecutora, vigencia, strconv.Itoa(int(mes.Month())))
-				ops = append(ops, opTree...)
-				op := crearCdp(value, unidadEjecutora, fechaRegistro, vigencia)
-				ops = append(ops, op)
-			}
 
 			modificacionApr := models.MovimientoCdp{
 				IDPsql:          strconv.Itoa(int(dataValor["Id"].(float64))),
@@ -493,12 +476,13 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 			ops = append(ops, op)
 
 		}
+		ops = append(ops, opsApr...)
 		beego.Info("ops en registarModifcacionApr: ")
 		for i := range ops {
 			fmt.Println(ops[i], "\n......")
 		}
-		// session, _ := db.GetSession()
-		// err = models.RegistrarMovimiento(session, ops)
+		session, _ := db.GetSession()
+		err = models.RegistrarMovimiento(session, ops)
 	}).Catch(func(e try.E) {
 		beego.Error("catch error registrar modificación apropiación")
 		panic(e)
@@ -542,33 +526,73 @@ func crearCdp(dataMovimiento map[string]interface{}, unidadEjecutora, fechaRegis
 }
 
 // Registrar valores de modificación en arbolrubroapropiacion
-func registrarValoresModf(dataModificacion map[string]interface{}, tipoTotal, tipoMes, unidadEjecutora, vigencia, mes string) (ops []interface{}) {
+func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue string) (ops []interface{}) {
 	// var err error
+	nuevoValor := make(map[string]map[string]map[string]float64)
+
 	try.This(func() {
-		session, _ := db.GetSession()
-		rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, dataModificacion["CuentaCredito"].(string), unidadEjecutora, vigencia)
-		if err != nil {
-			panic(err.Error())
-		}
 
-		nuevoValor := make(map[string]float64)
-		nuevoValor[tipoMes] = dataModificacion["Valor"].(float64)
-		nuevoValor[tipoTotal] = dataModificacion["Valor"].(float64)
-		if rubroApropiacion.Movimientos[mes] == nil {
-			rubroApropiacion.Movimientos[mes] = make(map[string]float64)
-		}
-		rubroApropiacion.Movimientos[mes][tipoMes] = dataModificacion["Valor"].(float64)
-		rubroApropiacion.Movimientos[mes][tipoTotal] += dataModificacion["Valor"].(float64)
+		for _, d := range dataModificacion {
+			data := d.(map[string]interface{})
+			data["Mes"] = mes
 
-		ops, err = prograpacionValores(rubroApropiacion.Id, mes, vigencia, unidadEjecutora, nuevoValor)
-		if err != nil {
-			panic(err.Error())
+			if nuevoValor[data["CuentaCredito"].(string)] == nil {
+				nuevoValor[data["CuentaCredito"].(string)] = make(map[string]map[string]float64)
+			}
+
+			if nuevoValor[data["CuentaCredito"].(string)][mes] == nil {
+				nuevoValor[data["CuentaCredito"].(string)][mes] = make(map[string]float64)
+			}
+
+			if data["TipoMovimiento"].(string) != "Traslado" {
+				formatModifGeneral(data, nuevoValor)
+			} else {
+
+				formatModifTraslado(data, nuevoValor)
+				beego.Info("nuevoValor: ", nuevoValor)
+			}
+
 		}
+		beego.Info("nuevoValor: ", nuevoValor)
+		for k, v := range nuevoValor {
+			op, err := prograpacionValores(k, mes, vigencia, ue, v[mes])
+			if err != nil {
+				panic(err.Error())
+			}
+			ops = append(ops, op...)
+		}
+		beego.Info("ops: ", ops)
 	}).Catch(func(e try.E) {
 		beego.Error("catch error en registrarValoresModificaciones")
 		panic(e)
 	})
 	return
+}
+
+// Formatea las modificaciones de tipo: reducción, adición, suspensión
+func formatModifGeneral(data map[string]interface{}, res map[string]map[string]map[string]float64) {
+	// if res[data["CuentaContraCredito"].(string)] == nil {
+	// 	res[data["CuentaContraCredito"].(string)] = make(map[string]map[string]float64)
+
+	// 	if res[data["CuentaContraCredito"].(string)][data["Mes"].(string)] == nil {
+	// 		res[data["CuentaContraCredito"].(string)][data["Mes"].(string)] = make(map[string]float64)
+	// 	}
+
+	// 	res[data["CuentaCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)+"_cuenta_credito"] += data["Valor"].(float64)
+	// 	res[data["CuentaContraCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)+"_cuenta_contra_credito"] += data["Valor"].(float64)
+	// } else {
+	// 	res[data["CuentaCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)] += data["Valor"].(float64)
+	// }
+
+	res[data["CuentaCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)] += data["Valor"].(float64)
+
+}
+
+// Formatea las modificaciones de traslado
+func formatModifTraslado(data map[string]interface{}, res map[string]map[string]map[string]float64) {
+	res[data["CuentaCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)+"_cuenta_credito"] += data["Valor"].(float64)
+	res[data["CuentaContraCredito"].(string)][data["Mes"].(string)][data["TipoMovimiento"].(string)+"_cuenta_contra_credito"] += data["Valor"].(float64)
+
 }
 
 // Itera sobre cada uno de los objetos que estén en el atributo Afectacion enviado desde el api_mid_financiera, que tienen la información necesaria del movimiento.
@@ -727,6 +751,7 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 
 		session, _ := db.GetSession()
 		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, rubro, ue, vigencia)
+
 		var apropiacionesCdp []*models.ArbolRubroApropiacion
 		if err != nil {
 			panic(err.Error())
@@ -780,7 +805,7 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 		}
 
 	}).Catch(func(e try.E) {
-		beego.Error("catch error propagarCdp: ", e)
+		beego.Error("catch error prograpacionValores: ", e)
 		panic(e)
 	})
 
@@ -801,4 +826,54 @@ func selectTipoMovimientoPadre(tipoHijo string) {
 	default:
 		tipoMovimientoPadre = ""
 	}
+}
+
+// @Title SaldoApropiacion
+// @Description Devuelve el saldo de las apropiaciones
+// @Param	body		body 	models.Object true "json de movimientos enviado desde el api_mid_financiera"
+// @Success 200 {string} success
+// @Failure 403 error
+// @router /SaldoApropiacion/:rubro/:unidadEjecutora/:vigencia [get]
+func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
+	try.This(func() {
+		var (
+			rubroParam    string
+			unidadEParam  int
+			vigenciaParam int
+			err           error
+		)
+		response := make(map[string]float64)
+		rubroParam = j.GetString(":rubro")
+		if unidadEParam, err = j.GetInt(":unidadEjecutora"); err != nil {
+			panic(err.Error())
+		}
+
+		if vigenciaParam, err = j.GetInt(":vigencia"); err != nil {
+			panic(err.Error())
+		}
+
+		session, _ := db.GetSession()
+		rubro, err := models.GetArbolRubroApropiacionById(session, rubroParam, strconv.Itoa(unidadEParam), strconv.Itoa(vigenciaParam))
+		beego.Info("rubros: ", rubro)
+		for _, value := range rubro.Movimientos {
+			for key, data := range value {
+				response[key] += data
+			}
+		}
+
+		// response := map[string]interface{}{
+		// 	"adiciones": 0,
+		// 	"anulado":   0,
+		// }
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		j.Data["json"] = response
+	}).Catch(func(e try.E) {
+		j.Data["json"] = e
+	})
+
+	j.ServeJSON()
 }
