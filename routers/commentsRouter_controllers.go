@@ -82,7 +82,7 @@ func init() {
 	beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/financiera_mongo_crud/controllers:ArbolRubroApropiacionController"],
 		beego.ControllerComments{
 			Method: "SaldoCdp",
-			Router: `/SaldoCdp/:idPsql`,
+			Router: `/SaldoCdp/:idPsql/:rubro`,
 			AllowHTTPMethods: []string{"get"},
 			MethodParams: param.Make(),
 			Params: nil})

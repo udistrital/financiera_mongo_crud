@@ -876,46 +876,65 @@ func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
 
 // @Title SaldoCdp
 // @Description Devuelve el saldo de un CDP especifico
-// @Param	body		body 	models.Object true "json de movimientos enviado desde el api_mid_financiera"
+// @Param	idPsql		path 	int	true		"idPsql del documento"
+// @Param	rubro		path 	string	true		"código del rubro"
+// @Param	fuente		query	string false		"fuente de financiamiento"
 // @Success 200 {string} success
 // @Failure 403 error
-// @router /SaldoCdp/:idPsql [get]
+// @router /SaldoCdp/:idPsql/:rubro [get]
 func (j *ArbolRubroApropiacionController) SaldoCdp() {
 	try.This(func() {
 		var (
-			cdpId    int
-			err      error
-			response []map[string]interface{}
+			cdpId int
+			err   error
+			// response []map[string]interface{}
+			response map[string]interface{}
 		)
 
 		cdpId, err = j.GetInt(":idPsql") // id psql del cdp
 		if err != nil {
 			panic(err.Error())
 		}
+		rubro := j.GetString(":rubro")
+		fuente := j.GetString("fuente")
+
 		session, _ := db.GetSession()
 		cdp, err := models.GetMovimientoByPsqlId(session, strconv.Itoa(cdpId), "cdp")
 		if err != nil {
 			panic(err.Error())
 		}
+		beego.Info("fuente path: ", fuente)
 		for _, value := range cdp.RubrosAfecta {
-			res := make(map[string]interface{})
-			for key, data := range value {
-				switch key {
-				case "Rubro":
-					res[key] = data
-				case "UnidadEjecutora":
-					res[key] = data
-				default:
-					if res[key] == nil {
-						res[key] = data.(float64)
-					} else {
-						res[key] = res[key].(float64) + data.(float64)
-					}
 
-				}
+			if value["FuenteCodigo"] == nil && value["Rubro"].(string) == rubro && fuente == "" {
+				beego.Info("sin fuente...")
+				response = value
+			} else if value["Rubro"].(string) == rubro && value["FuenteCodigo"].(string) == fuente {
+				beego.Info("con fuente...")
+				beego.Info("rubro: ", value["Rubro"].(string))
+				beego.Info("fuente: ", value["FuenteCodigo"].(string))
+				response = value
 			}
-			response = append(response, res)
 		}
+		// for _, value := range cdp.RubrosAfecta {
+		// 	res := make(map[string]interface{})
+		// 	for key, data := range value {
+		// 		switch key {
+		// 		case "Rubro":
+		// 			res[key] = data
+		// 		case "UnidadEjecutora":
+		// 			res[key] = data
+		// 		default:
+		// 			if res[key] == nil {
+		// 				res[key] = data.(float64)
+		// 			} else {
+		// 				res[key] = res[key].(float64) + data.(float64)
+		// 			}
+
+		// 		}
+		// 	}
+		// 	response = append(response, res)
+		// }
 
 		j.Data["json"] = response
 	}).Catch(func(e try.E) {
