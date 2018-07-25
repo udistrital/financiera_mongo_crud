@@ -885,9 +885,8 @@ func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
 func (j *ArbolRubroApropiacionController) SaldoCdp() {
 	try.This(func() {
 		var (
-			cdpId int
-			err   error
-			// response []map[string]interface{}
+			cdpId    int
+			err      error
 			response map[string]interface{}
 		)
 
@@ -903,38 +902,17 @@ func (j *ArbolRubroApropiacionController) SaldoCdp() {
 		if err != nil {
 			panic(err.Error())
 		}
-		beego.Info("fuente path: ", fuente)
-		for _, value := range cdp.RubrosAfecta {
 
+		for _, value := range cdp.RubrosAfecta {
 			if value["FuenteCodigo"] == nil && value["Rubro"].(string) == rubro && fuente == "" {
-				beego.Info("sin fuente...")
 				response = value
 			} else if value["Rubro"].(string) == rubro && value["FuenteCodigo"].(string) == fuente {
-				beego.Info("con fuente...")
-				beego.Info("rubro: ", value["Rubro"].(string))
-				beego.Info("fuente: ", value["FuenteCodigo"].(string))
 				response = value
 			}
 		}
-		// for _, value := range cdp.RubrosAfecta {
-		// 	res := make(map[string]interface{})
-		// 	for key, data := range value {
-		// 		switch key {
-		// 		case "Rubro":
-		// 			res[key] = data
-		// 		case "UnidadEjecutora":
-		// 			res[key] = data
-		// 		default:
-		// 			if res[key] == nil {
-		// 				res[key] = data.(float64)
-		// 			} else {
-		// 				res[key] = res[key].(float64) + data.(float64)
-		// 			}
-
-		// 		}
-		// 	}
-		// 	response = append(response, res)
-		// }
+		delete(response, "FuenteCodigo")
+		delete(response, "Rubro")
+		delete(response, "UnidadEjecutora")
 
 		j.Data["json"] = response
 	}).Catch(func(e try.E) {
