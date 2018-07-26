@@ -19,7 +19,7 @@ type ArbolRubroApropiacionController struct {
 	beego.Controller
 }
 
-// Método Get de HTTP
+// Get Método Get de HTTP
 // @Title Get
 // @Description get ArbolRubroApropiacion2018 by nombre
 // @Param	nombre		path 	string	true		"El nombre de la ArbolRubroApropiacion2018 a consultar"
@@ -42,6 +42,7 @@ func (j *ArbolRubroApropiacionController) Get() {
 	j.ServeJSON()
 }
 
+// Delete elimina
 // @Title Delete ArbolRubroApropiacion2018
 // @Description Borrar ArbolRubroApropiacion2018
 // @Param	objectId		path 	string	true		"El ObjectId del objeto que se quiere borrar"
@@ -50,12 +51,13 @@ func (j *ArbolRubroApropiacionController) Get() {
 // @router /:objectId [delete]
 func (j *ArbolRubroApropiacionController) Delete() {
 	session, _ := db.GetSession()
-	objectId := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteArbolRubroApropiacion2018ById(session, objectId)
+	objectID := j.Ctx.Input.Param(":objectId")
+	result, _ := models.DeleteArbolRubroApropiacion2018ById(session, objectID)
 	j.Data["json"] = result
 	j.ServeJSON()
 }
 
+// Post Método Post de HTTP
 // @Title Crear ArbolRubroApropiacion2018
 // @Description Crear ArbolRubroApropiacion2018
 // @Param	body		body 	models.ArbolRubroApropiacion2018	true		"Body para la creacion de ArbolRubroApropiacion2018"
@@ -79,6 +81,7 @@ func (j *ArbolRubroApropiacionController) Post() {
 	j.ServeJSON()
 }
 
+// Put de HTTP
 // @Title Update
 // @Description update the ArbolRubroApropiacion2018
 // @Param	objectId		path 	string	true		"The objectid you want to update"
@@ -87,14 +90,14 @@ func (j *ArbolRubroApropiacionController) Post() {
 // @Failure 403 :objectId is empty
 // @router /:objectId/:vigencia/:unidadEjecutora [put]
 func (j *ArbolRubroApropiacionController) Put() {
-	objectId := j.Ctx.Input.Param(":objectId")
+	objectID := j.Ctx.Input.Param(":objectId")
 	vigencia := j.Ctx.Input.Param(":vigencia")
 	unidadEjecutora := j.Ctx.Input.Param(":unidadEjecutora")
 	var arbolrubroapropiacion models.ArbolRubroApropiacion
 	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
 	session, _ := db.GetSession()
 
-	err := models.UpdateArbolRubroApropiacion(session, arbolrubroapropiacion, objectId, unidadEjecutora, vigencia)
+	err := models.UpdateArbolRubroApropiacion(session, arbolrubroapropiacion, objectID, unidadEjecutora, vigencia)
 	if err != nil {
 		j.Data["json"] = err.Error()
 	} else {
@@ -103,6 +106,7 @@ func (j *ArbolRubroApropiacionController) Put() {
 	j.ServeJSON()
 }
 
+// Options options
 // @Title Preflight options
 // @Description Crear ArbolRubroApropiacion2018
 // @Param	body		body 	models.ArbolRubroApropiacion2018	true		"Body para la creacion de ArbolRubroApropiacion2018"
@@ -114,6 +118,7 @@ func (j *ArbolRubroApropiacionController) Options() {
 	j.ServeJSON()
 }
 
+// ArbolRubroApropiacion2018DeleteOptions ArbolRubroApropiacion2018DeleteOptions
 // @Title Preflight options
 // @Description Crear ArbolRubroApropiacion2018
 // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de ArbolRubroApropiacion2018"
@@ -125,6 +130,7 @@ func (j *ArbolRubroApropiacionController) ArbolRubroApropiacion2018DeleteOptions
 	j.ServeJSON()
 }
 
+// ArbolApropiacion devuelve un árbol desde la raiz indicada
 // @Title Preflight ArbolApropiacion
 // @Description Devuelve un nivel del árbol de apropiaciones
 // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de ArbolRubroApropiacion2018"
@@ -295,6 +301,7 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 	j.ServeJSON()
 }
 
+// Construye la rama a partir de un registro de apropiación inicial
 func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int) error {
 	var (
 		actualRubro                         models.ArbolRubros
@@ -340,6 +347,7 @@ func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int
 	return err
 }
 
+// Propaga el cambio de la apropiación desde la hoja hasta la raiz, verificando recursivamente si el rubro que se está obteniendo tiene un padre o no
 func propagarCambio(codigoRubro, ue, vigencia string, valorPropagado int) error {
 	var err error
 
@@ -874,31 +882,32 @@ func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
 	j.ServeJSON()
 }
 
-// @Title SaldoCdp
+// SaldoMovimiento Devuelve un objeto con el saldo del cdp
+// @Title SaldoMovimiento
 // @Description Devuelve el saldo de un CDP especifico
 // @Param	idPsql		path 	int	true		"idPsql del documento"
 // @Param	rubro		path 	string	true		"código del rubro"
 // @Param	fuente		query	string false		"fuente de financiamiento"
 // @Success 200 {string} success
 // @Failure 403 error
-// @router /SaldoCdp/:idPsql/:rubro [get]
-func (j *ArbolRubroApropiacionController) SaldoCdp() {
+// @router /SaldoMovimiento/:idPsql/:rubro/:tipoMovimiento [get]
+func (j *ArbolRubroApropiacionController) SaldoMovimiento() {
 	try.This(func() {
 		var (
-			cdpId    int
+			cdpID    int
 			err      error
 			response map[string]interface{}
 		)
 
-		cdpId, err = j.GetInt(":idPsql") // id psql del cdp
+		cdpID, err = j.GetInt(":idPsql") // id psql del cdp
 		if err != nil {
 			panic(err.Error())
 		}
 		rubro := j.GetString(":rubro")
 		fuente := j.GetString("fuente")
-
+		tipoMovimiento := j.GetString(":tipoMovimiento")
 		session, _ := db.GetSession()
-		cdp, err := models.GetMovimientoByPsqlId(session, strconv.Itoa(cdpId), "cdp")
+		cdp, err := models.GetMovimientoByPsqlId(session, strconv.Itoa(cdpID), tipoMovimiento)
 		if err != nil {
 			panic(err.Error())
 		}
