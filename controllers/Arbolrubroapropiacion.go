@@ -919,8 +919,10 @@ func (j *ArbolRubroApropiacionController) SaldoMovimiento() {
 				response = value
 			}
 		}
-		delete(response, "FuenteCodigo")
+		delete(response, "FuenteNombre")
 		delete(response, "Rubro")
+		delete(response, "Apropiacion")
+		delete(response, "FuenteCodigo")
 		delete(response, "UnidadEjecutora")
 
 		j.Data["json"] = response
