@@ -624,6 +624,7 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			vigencia := dataValor["Vigencia"].(string)
 
 			session, _ := db.GetSession()
+			beego.Info(rubro, " |", unidadEjecutora, " |", vigencia)
 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
 
 			if err != nil {
@@ -634,6 +635,10 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 
 			if len(rubroApropiacion.Movimientos) == 0 {
 				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
+				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
+			}
+
+			if rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] == nil {
 				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
 			}
 
@@ -759,6 +764,7 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 	try.This(func() {
 
 		session, _ := db.GetSession()
+
 		apropiacionPadre, err := models.GetArbolRubroApropiacionById(session, rubro, ue, vigencia)
 
 		var apropiacionesCdp []*models.ArbolRubroApropiacion
@@ -767,6 +773,7 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 		}
 
 		for apropiacionPadre != nil {
+			beego.Info()
 			if apropiacionPadre.Movimientos[mes] == nil {
 				apropiacionPadre.Movimientos[mes] = make(map[string]float64)
 			}
@@ -775,11 +782,12 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 				apropiacionPadre.Movimientos = make(map[string]map[string]float64)
 				apropiacionPadre.Movimientos[mes] = valorPrograpado
 			} else {
-
 				for key, value := range valorPrograpado {
+
 					if apropiacionPadre.Movimientos[mes][key] != 0 {
 						if strings.Contains(key, "mes") {
 							apropiacionPadre.Movimientos[mes][key] = value
+
 						} else {
 							apropiacionPadre.Movimientos[mes][key] += value
 						}
