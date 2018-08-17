@@ -10,12 +10,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Cursor devuelve un apuntador con la conexión a la bd y la colección especifica
 func Cursor(session *mgo.Session, Collection string) *mgo.Collection {
 	mongoDB := beego.AppConfig.String("mongo_db")
 	c := session.DB(mongoDB).C(Collection)
 	return c
 }
 
+// GetSession crea una sesión con las credenciales
 func GetSession() (*mgo.Session, error) {
 
 	mongoHost := beego.AppConfig.String("mongo_host")

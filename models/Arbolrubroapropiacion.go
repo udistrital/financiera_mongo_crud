@@ -29,23 +29,6 @@ type ArbolRubroApropiacion struct {
 	Movimientos         map[string]map[string]float64 `json:"movimientos"`
 }
 
-// type Movimiento struct {
-// 	Mes_modificacion        float64 `json:"mes_modificacion"`
-// 	Total_modificacion      float64 `json:"total_modificacion"`
-// 	Total_adicion           float64 `json:"total_adicion"`
-// 	Total_reduccion         float64 `json:"total_reduccion"`
-// 	Traslados_total_credito float64 `json:"traslados_total_credito"`
-// 	Traslados_contracredito float64 `json:"traslados_contracredito"`
-// 	Total_anulado           float64 `json:"total_anulado"`
-// 	Mes_cdp                 float64 `json:"mes_cdp"`
-// 	Total_cdp               float64 `json:"total_cdp"`
-// 	Mes_rp                  float64 `json:"mes_rp"`
-// 	Total_rp                float64 `json:"total_rp"`
-// 	Mes_op                  float64 `json:"mes_op"`
-// 	Total_giro              float64 `json:"total_giro"`
-// 	Mes_giro                float64 `json:"mes_giro"`
-// }
-
 // UpdateArbolRubroApropiacion Update function to ArbolRubroApropiacion
 func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, ue, vigencia string) error {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
@@ -53,10 +36,10 @@ func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, 
 	// Update
 	fmt.Println("id update: ", id)
 	err := c.Update(bson.M{"_id": id}, &j)
-	if err != nil {
+	/*if err != nil {
 		fmt.Println("updatw error")
 		panic(err)
-	}
+	}*/
 	return err
 
 }
