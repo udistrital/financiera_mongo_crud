@@ -14,11 +14,6 @@ import (
 
 func init() {
 	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/agenda",
-			beego.NSInclude(
-				&controllers.AgendaController{},
-			),
-		),
 		beego.NSNamespace("/arbol_rubro",
 			beego.NSInclude(
 				&controllers.ArbolRubrosController{},
