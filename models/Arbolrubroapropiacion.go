@@ -29,6 +29,17 @@ type ArbolRubroApropiacion struct {
 	Movimientos         map[string]map[string]float64 `json:"movimientos"`
 }
 
+func GetAllArbolRubroApropiacion(session *mgo.Session, query map[string]interface{}, ue, vigencia string) []ArbolRubroApropiacion {
+	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)
+	defer session.Close()
+	var arbolRubroApropiacion []ArbolRubroApropiacion
+	err := c.Find(query).All(&arbolRubroApropiacion)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return arbolRubroApropiacion
+}
+
 // UpdateArbolRubroApropiacion Update function to ArbolRubroApropiacion
 func UpdateArbolRubroApropiacion(session *mgo.Session, j ArbolRubroApropiacion, id, ue, vigencia string) error {
 	c := db.Cursor(session, ArbolRubroApropiacionCollection+"_"+vigencia+"_"+ue)

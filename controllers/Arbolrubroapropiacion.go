@@ -19,6 +19,48 @@ type ArbolRubroApropiacionController struct {
 	beego.Controller
 }
 
+// GetAll función para obtener todos los objetos
+// @Title GetAll
+// @Description get all objects
+// @Success 200 ArbolRubroApropiacion models.ArbolRubroApropiacion
+// @Failure 403 :objectId is empty
+// @router /:vigencia/:unidadEjecutora [get]
+func (j *ArbolRubroApropiacionController) GetAll() {
+	session, _ := db.GetSession()
+	vigencia := j.GetString(":vigencia")
+	unidadEjecutora := j.GetString(":unidadEjecutora")
+	var query = make(map[string]interface{})
+	beego.Info("get all funciton: ", vigencia, unidadEjecutora)
+	if v := j.GetString("query"); v != "" {
+		for _, cond := range strings.Split(v, ",") {
+			kv := strings.SplitN(cond, ":", 2)
+			if len(kv) != 2 {
+				j.Data["json"] = errors.New("Consulta invalida")
+				j.ServeJSON()
+				return
+			}
+
+			if i, err := strconv.Atoi(kv[1]); err == nil {
+				k, v := kv[0], i
+				query[k] = v
+			} else {
+				k, v := kv[0], kv[1]
+				query[k] = v
+			}
+		}
+	}
+
+	obs := models.GetAllArbolRubroApropiacion(session, query, unidadEjecutora, vigencia)
+
+	if len(obs) == 0 {
+		j.Data["json"] = []string{}
+	} else {
+		j.Data["json"] = &obs
+	}
+
+	j.ServeJSON()
+}
+
 // Get Método Get de HTTP
 // @Title Get
 // @Description get ArbolRubroApropiacion2018 by nombre
