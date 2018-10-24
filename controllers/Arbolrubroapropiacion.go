@@ -216,6 +216,7 @@ func (j *ArbolRubroApropiacionController) ArbolApropiacion() {
 	j.ServeJSON()
 }
 
+// RaicesArbolApropiacion
 // @Title RaicesArbolApropiacion
 // @Description RaicesArbolApropiacion
 // @Success 200 {object} models.Object
