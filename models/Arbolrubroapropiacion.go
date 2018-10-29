@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 
-	"github.com/astaxie/beego"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -97,7 +96,7 @@ func GetRaicesApropiacion(session *mgo.Session, ue, vigencia string) ([]ArbolRub
 		"idpsql":           bson.M{"$ne": nil},
 		"unidad_ejecutora": bson.M{"$in": []string{"0", ue}},
 	}).All(&roots)
-	beego.Info("roots: ", roots)
+	// beego.Info("roots: ", roots)
 	return roots, err
 }
 

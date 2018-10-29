@@ -14,6 +14,7 @@ type FuenteFinaciamientoPadre struct {
 	IDPsql          int         `json:"idpsql"`
 	Nombre          string      `json:"nombre"`
 	TipoFuente      interface{} `json:"tipo_fuente"`
+	ValorOriginal   float64     `json:"valor_original"`
 }
 
 // FuenteMovimiento ...

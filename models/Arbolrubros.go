@@ -43,7 +43,7 @@ func InsertArbolRubros(session *mgo.Session, j ArbolRubros) error {
 func GetAllArbolRubross(session *mgo.Session, query map[string]interface{}) []ArbolRubros {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
-	fmt.Println("Getting all arbolrubross")
+	// fmt.Println("Getting all arbolrubross")
 	var arbolrubross []ArbolRubros
 	err := c.Find(query).All(&arbolrubross)
 	if err != nil {

@@ -613,7 +613,7 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			}
 			ops = append(ops, op...)
 		}
-		beego.Info("ops: ", ops)
+		// beego.Info("ops: ", ops)
 	}).Catch(func(e try.E) {
 		beego.Error("catch error en registrarValoresModificaciones")
 		panic(e)
@@ -698,7 +698,12 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			}
 		}
 
+		beego.Info("dataValor: ", dataValor)
+		beego.Info("total: ", total)
+		beego.Info("mes: ", mes)
+
 		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
+
 		ops = append(ops, op...)
 
 		session, _ := db.GetSession()

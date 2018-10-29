@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -47,7 +45,7 @@ func EstrctTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops 
 }
 
 func EstrctUpdateTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops txn.Op, err error) {
-	fmt.Println("Id:    ", estructura.ID)
+	// fmt.Println("Id:    ", estructura.ID)
 	// estructura.ID = bson.NewObjectId().Hex()
 	op := txn.Op{
 		C:      MovimientosCollection,
