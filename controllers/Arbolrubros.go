@@ -81,6 +81,7 @@ func (j *ArbolRubrosController) Get() {
 	j.ServeJSON()
 }
 
+// Delete ...
 // @Title Borrar ArbolRubros
 // @Description Borrar ArbolRubros
 // @Param	objectId		path 	string	true		"El ObjectId del objeto que se quiere borrar"
@@ -95,6 +96,7 @@ func (j *ArbolRubrosController) Delete() {
 	j.ServeJSON()
 }
 
+// Post ...
 // @Title Crear ArbolRubros
 // @Description Crear ArbolRubros
 // @Param	body		body 	models.ArbolRubros	true		"Body para la creacion de ArbolRubros"
@@ -103,14 +105,23 @@ func (j *ArbolRubrosController) Delete() {
 // @router / [post]
 func (j *ArbolRubrosController) Post() {
 	var arbolrubros models.ArbolRubros
-	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
-	fmt.Println(arbolrubros)
-	session, _ := db.GetSession()
-	models.InsertArbolRubros(session, arbolrubros)
-	j.Data["json"] = "insert success!"
+	if errorUnmarshal := json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros); errorUnmarshal == nil {
+		fmt.Println(arbolrubros)
+		session, _ := db.GetSession()
+		if errorInsertArbol := models.InsertArbolRubros(session, arbolrubros); errorInsertArbol == nil{
+			j.Data["json"] = "insert success!"
+		}else{
+			j.Data["json"] = errorInsertArbol.Error()
+		}
+
+	}else{
+		j.Data["json"] = errorUnmarshal.Error()
+	}
+
 	j.ServeJSON()
 }
 
+// Put ...
 // @Title Update
 // @Description update the ArbolRubros
 // @Param	objectId		path 	string	true		"The objectid you want to update"
@@ -122,18 +133,23 @@ func (j *ArbolRubrosController) Put() {
 	objectId := j.Ctx.Input.Param(":objectId")
 
 	var arbolrubros models.ArbolRubros
-	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros)
-	session, _ := db.GetSession()
+	if errorUnmarshal:= json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubros); errorUnmarshal == nil{
+		session, _ := db.GetSession()
 
-	err := models.UpdateArbolRubros(session, arbolrubros, objectId)
-	if err != nil {
-		j.Data["json"] = err.Error()
-	} else {
-		j.Data["json"] = "update success!"
+		err := models.UpdateArbolRubros(session, arbolrubros, objectId)
+		if err != nil {
+			j.Data["json"] = err.Error()
+		} else {
+			j.Data["json"] = "update success!"
+		}
+	}else{
+		j.Data["json"] = errorUnmarshal.Error()
 	}
+
 	j.ServeJSON()
 }
 
+// Options ...
 // @Title Preflight options
 // @Description Crear ArbolRubros
 // @Param	body		body 	models.ArbolRubros	true		"Body para la creacion de ArbolRubros"
@@ -145,6 +161,7 @@ func (j *ArbolRubrosController) Options() {
 	j.ServeJSON()
 }
 
+// ArbolRubrosDeleteOptions ...
 // @Title Preflight options
 // @Description Crear ArbolRubros
 // @Param	body		body 	models.ArbolRubros true		"Body para la creacion de ArbolRubros"
@@ -156,6 +173,7 @@ func (j *ArbolRubrosController) ArbolRubrosDeleteOptions() {
 	j.ServeJSON()
 }
 
+// RegistrarRubro ...
 // @Title Registra rubro
 // @Description Convierte la estructura del api mid para registrarla en un documento mongo
 // @Param	body		interface{}	true		"Body para la creacion de un nuevo rubro"
@@ -170,33 +188,37 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 			err        error
 		)
 		session, _ := db.GetSession()
-		json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData)
-		rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
+		if errorUnmarshal := json.Unmarshal(j.Ctx.Input.RequestBody, &rubroData); errorUnmarshal != nil{
+			rubroDataHijo := rubroData.(map[string]interface{})["RubroHijo"].(map[string]interface{})
 
-		nuevoRubro := models.ArbolRubros{
-			Id:               rubroDataHijo["Codigo"].(string),
-			Idpsql:           strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 0, 64),
-			Nombre:           rubroDataHijo["Nombre"].(string),
-			Descripcion:      rubroDataHijo["Descripcion"].(string),
-			Hijos:            nil,
-			Unidad_Ejecutora: strconv.FormatFloat(rubroDataHijo["UnidadEjecutora"].(float64), 'f', 0, 64)}
+			nuevoRubro := models.ArbolRubros{
+				Id:               rubroDataHijo["Codigo"].(string),
+				Idpsql:           strconv.FormatFloat(rubroDataHijo["Id"].(float64), 'f', 0, 64),
+				Nombre:           rubroDataHijo["Nombre"].(string),
+				Descripcion:      rubroDataHijo["Descripcion"].(string),
+				Hijos:            nil,
+				Unidad_Ejecutora: strconv.FormatFloat(rubroDataHijo["UnidadEjecutora"].(float64), 'f', 0, 64)}
 
-		if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre["Codigo"] != nil {
-			rubroPadre = rubroDataPadre["Codigo"].(string)
-			nuevoRubro.Padre = rubroPadre
-			updatedRubro, _ := models.GetArbolRubrosById(session, rubroPadre)
-			updatedRubro.Hijos = append(updatedRubro.Hijos, rubroDataHijo["Codigo"].(string))
-			session, _ = db.GetSession()
-			err = models.RegistrarRubroTransacton(updatedRubro, nuevoRubro, session)
-		} else {
-			err = models.InsertArbolRubros(session, nuevoRubro)
+			if rubroDataPadre := rubroData.(map[string]interface{})["RubroPadre"].(map[string]interface{}); rubroDataPadre["Codigo"] != nil {
+				rubroPadre = rubroDataPadre["Codigo"].(string)
+				nuevoRubro.Padre = rubroPadre
+				updatedRubro, _ := models.GetArbolRubrosById(session, rubroPadre)
+				updatedRubro.Hijos = append(updatedRubro.Hijos, rubroDataHijo["Codigo"].(string))
+				session, _ = db.GetSession()
+				err = models.RegistrarRubroTransacton(updatedRubro, nuevoRubro, session)
+			} else {
+				err = models.InsertArbolRubros(session, nuevoRubro)
+			}
+
+			if err != nil {
+				panic(err.Error())
+			} else {
+				j.Data["json"] = map[string]interface{}{"Type": "sucess"}
+			}
+		}else{
+			beego.Error(errorUnmarshal)
 		}
 
-		if err != nil {
-			panic(err.Error())
-		} else {
-			j.Data["json"] = map[string]interface{}{"Type": "sucess"}
-		}
 	}).Catch(func(e try.E) {
 		beego.Error(e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
@@ -205,6 +227,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 	j.ServeJSON()
 }
 
+// EliminarRubro ...
 // @Title Eliminar rubro
 // @Description recibe el idPsql del rubro desde api mid para eliminar el rubro
 // @Param	body		interface{}	true		"Body para la eliminación de un rubro"
@@ -256,6 +279,7 @@ func remove(slice []string, object string) []string {
 	return slice
 }
 
+// RaicesArbol ...
 // @Title RaicesArbol
 // @Description RaicesArbol
 // @Param body body models.Rubro true "Body para la creacion de Rubro"
@@ -300,6 +324,7 @@ func (j *ArbolRubrosController) RaicesArbol() {
 	j.ServeJSON()
 }
 
+// ArbolRubro ...
 // @Title Preflight options
 // @Description Construye el árbol a un nivel dependiendo de la raíz
 // @Param body body stringtrue "Código de la raíz"
