@@ -1,0 +1,6 @@
+projectKey=financiera_mongo_crud
+serverUrl=http://localhost:9000
+serverVersion=7.0.0.36138
+dashboardUrl=http://localhost:9000/dashboard/index/financiera_mongo_crud
+ceTaskId=AWbLmJemG9VH13XU48oM
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AWbLmJemG9VH13XU48oM

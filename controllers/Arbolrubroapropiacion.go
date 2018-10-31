@@ -30,15 +30,21 @@ func (j *ArbolRubroApropiacionController) Get() {
 	id := j.GetString(":id")
 	vigencia := j.GetString(":vigencia")
 	unidadEjecutora := j.GetString(":unidadEjecutora")
-	session, _ := db.GetSession()
-	if id != "" {
-		arbolrubroapropiacion, err := models.GetArbolRubroApropiacionById(session, id, unidadEjecutora, vigencia)
-		if err != nil {
-			j.Data["json"] = err.Error()
-		} else {
-			j.Data["json"] = arbolrubroapropiacion
+	session, errGetSession := db.GetSession()
+
+	if errGetSession == nil {
+		if id != "" {
+			arbolrubroapropiacion, err := models.GetArbolRubroApropiacionById(session, id, unidadEjecutora, vigencia)
+			if err != nil {
+				j.Data["json"] = err.Error()
+			} else {
+				j.Data["json"] = arbolrubroapropiacion
+			}
 		}
+	}else{
+		j.Data["json"] = errGetSession.Error()
 	}
+
 	j.ServeJSON()
 }
 
@@ -50,10 +56,21 @@ func (j *ArbolRubroApropiacionController) Get() {
 // @Failure 403 objectId is empty
 // @router /:objectId [delete]
 func (j *ArbolRubroApropiacionController) Delete() {
-	session, _ := db.GetSession()
-	objectID := j.Ctx.Input.Param(":objectId")
-	result, _ := models.DeleteArbolRubroApropiacion2018ById(session, objectID)
-	j.Data["json"] = result
+	session, errGetSession := db.GetSession()
+
+	if errGetSession == nil {
+		objectID := j.Ctx.Input.Param(":objectId")
+		result, errDelete := models.DeleteArbolRubroApropiacion2018ById(session, objectID)
+		if errDelete == nil{
+			j.Data["json"] = result
+		}else{
+			j.Data["json"] = errDelete.Error()
+		}
+
+	}else{
+		j.Data["json"] = errGetSession.Error()
+	}
+
 	j.ServeJSON()
 }
 
@@ -69,11 +86,22 @@ func (j *ArbolRubroApropiacionController) Post() {
 	unidadEjecutora := j.GetString(":unidadEjecutora")
 	if vigencia != "" {
 		var arbolrubroapropiacion *models.ArbolRubroApropiacion
-		json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
-		fmt.Println(arbolrubroapropiacion)
-		session, _ := db.GetSession()
-		models.InsertArbolRubroApropiacion(session, arbolrubroapropiacion, unidadEjecutora, vigencia)
-		j.Data["json"] = "insert success!"
+		if errorUnmarshal := json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion); errorUnmarshal == nil {
+			fmt.Println(arbolrubroapropiacion)
+			session, errGetSession := db.GetSession()
+
+			if errGetSession == nil{
+				models.InsertArbolRubroApropiacion(session, arbolrubroapropiacion, unidadEjecutora, vigencia)
+				j.Data["json"] = "insert success!"
+			}else{
+				j.Data["json"] = errGetSession.Error();
+			}
+
+
+		}else{
+			j.Data["json"] = "insert fail!"
+		}
+
 	} else {
 		j.Data["json"] = "vigencia null"
 	}
@@ -94,15 +122,25 @@ func (j *ArbolRubroApropiacionController) Put() {
 	vigencia := j.Ctx.Input.Param(":vigencia")
 	unidadEjecutora := j.Ctx.Input.Param(":unidadEjecutora")
 	var arbolrubroapropiacion models.ArbolRubroApropiacion
-	json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion)
-	session, _ := db.GetSession()
+	if errorUnmarshal := json.Unmarshal(j.Ctx.Input.RequestBody, &arbolrubroapropiacion); errorUnmarshal == nil{
+		session, errGetSession := db.GetSession()
 
-	err := models.UpdateArbolRubroApropiacion(session, arbolrubroapropiacion, objectID, unidadEjecutora, vigencia)
-	if err != nil {
-		j.Data["json"] = err.Error()
-	} else {
-		j.Data["json"] = "update success!"
+		if errGetSession == nil{
+			err := models.UpdateArbolRubroApropiacion(session, arbolrubroapropiacion, objectID, unidadEjecutora, vigencia)
+			if err != nil {
+				j.Data["json"] = err.Error()
+			} else {
+				j.Data["json"] = "update success!"
+			}
+		}else{
+			j.Data["json"] = errGetSession.Error();
+		}
+
+
+	}else{
+		j.Data["json"] = errorUnmarshal.Error()
 	}
+
 	j.ServeJSON()
 }
 
@@ -141,39 +179,51 @@ func (j *ArbolRubroApropiacionController) ArbolApropiacion() {
 	nodoRaiz := j.GetString(":raiz")
 	ueStr := j.GetString(":unidadEjecutora")
 	vigencia := j.GetString(":vigencia")
-	session, _ := db.GetSession()
-	var arbolApropacionessGrande []map[string]interface{}
+	session, errGetSession := db.GetSession()
+	var errConv error
+	if errGetSession == nil{
+		var arbolApropacionessGrande []map[string]interface{}
 
-	raiz, err := models.GetNodoApropiacion(session, nodoRaiz, ueStr, vigencia)
+		raiz, err := models.GetNodoApropiacion(session, nodoRaiz, ueStr, vigencia)
 
-	if err == nil {
-		arbolApropiaciones := make(map[string]interface{})
-		arbolApropiaciones["Id"], _ = strconv.Atoi(raiz.Idpsql)
-		arbolApropiaciones["Codigo"] = raiz.Id
-		arbolApropiaciones["Nombre"] = raiz.Nombre
-		arbolApropiaciones["IsLeaf"] = true
-		arbolApropiaciones["UnidadEjecutora"] = raiz.Unidad_ejecutora
-		arbolApropiaciones["ApropiacionInicial"] = raiz.Apropiacion_inicial
+		if err == nil {
+			arbolApropiaciones := make(map[string]interface{})
+			arbolApropiaciones["Id"], errConv = strconv.Atoi(raiz.Idpsql)
 
-		var hijos []interface{}
-		for j := 0; j < len(raiz.Hijos); j++ {
-			hijo := getHijoApropiacion(raiz.Hijos[j], ueStr, vigencia)
-			if len(hijo) > 0 {
-				arbolApropiaciones["IsLeaf"] = false
-				hijos = append(hijos, hijo)
+			if errConv != nil {
+				beego.Info("error conviertiendo tipos")
 			}
-		}
-		arbolApropiaciones["Hijos"] = hijos
-		arbolApropacionessGrande = append(arbolApropacionessGrande, arbolApropiaciones)
 
-		j.Data["json"] = arbolApropacionessGrande
-	} else {
-		j.Data["json"] = err
+			arbolApropiaciones["Codigo"] = raiz.Id
+			arbolApropiaciones["Nombre"] = raiz.Nombre
+			arbolApropiaciones["IsLeaf"] = true
+			arbolApropiaciones["UnidadEjecutora"] = raiz.Unidad_ejecutora
+			arbolApropiaciones["ApropiacionInicial"] = raiz.Apropiacion_inicial
+
+			var hijos []interface{}
+			for j := 0; j < len(raiz.Hijos); j++ {
+				hijo := getHijoApropiacion(raiz.Hijos[j], ueStr, vigencia)
+				if len(hijo) > 0 {
+					arbolApropiaciones["IsLeaf"] = false
+					hijos = append(hijos, hijo)
+				}
+			}
+			arbolApropiaciones["Hijos"] = hijos
+			arbolApropacionessGrande = append(arbolApropacionessGrande, arbolApropiaciones)
+
+			j.Data["json"] = arbolApropacionessGrande
+		} else {
+			j.Data["json"] = err
+		}
+
+	}else{
+		j.Data["json"] = errGetSession.Error()
 	}
 
 	j.ServeJSON()
 }
 
+// RaicesArbolApropiacion ...
 // @Title RaicesArbolApropiacion
 // @Description RaicesArbolApropiacion
 // @Success 200 {object} models.Object
@@ -182,39 +232,50 @@ func (j *ArbolRubroApropiacionController) ArbolApropiacion() {
 func (j *ArbolRubroApropiacionController) RaicesArbolApropiacion() {
 	ueStr := j.Ctx.Input.Param(":unidadEjecutora")
 	vigencia := j.GetString(":vigencia")
-	session, _ := db.GetSession()
-	var roots []map[string]interface{}
-	raices, err := models.GetRaicesApropiacion(session, ueStr, vigencia)
-	for i := 0; i < len(raices); i++ {
-		idPsql, _ := strconv.Atoi(raices[i].Idpsql)
-		root := map[string]interface{}{
-			"Id":                 idPsql,
-			"Codigo":             raices[i].Id,
-			"Nombre":             raices[i].Nombre,
-			"Hijos":              raices[i].Hijos,
-			"IsLeaf":             true,
-			"UnidadEjecutora":    raices[i].Unidad_ejecutora,
-			"ApropiacionInicial": raices[i].Apropiacion_inicial,
-		}
-		if len(raices[i].Hijos) > 0 {
-			var hijos []map[string]interface{}
-			root["IsLeaf"] = false
-			for j := 0; j < len(root["Hijos"].([]string)); j++ {
-				hijo := getHijoApropiacion(root["Hijos"].([]string)[j], ueStr, vigencia)
-				if len(hijo) > 0 {
-					hijos = append(hijos, hijo)
-				}
+	session, errGetSession := db.GetSession()
+
+	if errGetSession == nil {
+		var roots []map[string]interface{}
+		raices, err := models.GetRaicesApropiacion(session, ueStr, vigencia)
+		for i := 0; i < len(raices); i++ {
+			idPsql, errorID := strconv.Atoi(raices[i].Idpsql)
+			 if errorID != nil {
+				 idPsql = 0
+				 beego.Info( "error en conversion:", errorID)
+			 }
+
+			root := map[string]interface{}{
+				"Id":                 idPsql,
+				"Codigo":             raices[i].Id,
+				"Nombre":             raices[i].Nombre,
+				"Hijos":              raices[i].Hijos,
+				"IsLeaf":             true,
+				"UnidadEjecutora":    raices[i].Unidad_ejecutora,
+				"ApropiacionInicial": raices[i].Apropiacion_inicial,
 			}
-			root["Hijos"] = hijos
+			if len(raices[i].Hijos) > 0 {
+				var hijos []map[string]interface{}
+				root["IsLeaf"] = false
+				for j := 0; j < len(root["Hijos"].([]string)); j++ {
+					hijo := getHijoApropiacion(root["Hijos"].([]string)[j], ueStr, vigencia)
+					if len(hijo) > 0 {
+						hijos = append(hijos, hijo)
+					}
+				}
+				root["Hijos"] = hijos
+			}
+			roots = append(roots, root)
 		}
-		roots = append(roots, root)
+
+		if err != nil {
+			j.Data["json"] = err
+		} else {
+			j.Data["json"] = roots
+		}
+	}else{
+			j.Data["json"] = errGetSession.Error()
 	}
 
-	if err != nil {
-		j.Data["json"] = err
-	} else {
-		j.Data["json"] = roots
-	}
 
 	j.ServeJSON()
 }
@@ -223,29 +284,43 @@ func (j *ArbolRubroApropiacionController) RaicesArbolApropiacion() {
 // Se devuelve un objeto de este tipo y no de models con el fin de utilizar la estructura de json utilizada ya en el cliente
 // y no tener que hacer grandes modificaciones en el
 func getHijoApropiacion(id, ue, vigencia string) map[string]interface{} {
-	session, _ := db.GetSession()
-	rubroHijo, _ := models.GetArbolRubroApropiacionById(session, id, ue, vigencia)
-	hijo := make(map[string]interface{})
-	if rubroHijo != nil {
-		if rubroHijo.Id != "" {
-			hijo["Id"], _ = strconv.Atoi(rubroHijo.Idpsql)
-			hijo["Codigo"] = rubroHijo.Id
-			hijo["Nombre"] = rubroHijo.Nombre
-			hijo["IsLeaf"] = false
-			hijo["UnidadEjecutora"] = rubroHijo.Unidad_ejecutora
-			hijo["ApropiacionInicial"] = rubroHijo.Apropiacion_inicial
-			if len(rubroHijo.Hijos) == 0 {
-				hijo["IsLeaf"] = true
-				hijo["Hijos"] = nil
-				return hijo
+	var errorConv error
+	session, errGetSession := db.GetSession()
+
+	if errGetSession == nil {
+		rubroHijo, errorGet := models.GetArbolRubroApropiacionById(session, id, ue, vigencia)
+		hijo := make(map[string]interface{})
+		if rubroHijo != nil && errorGet == nil {
+			if rubroHijo.Id != "" {
+				hijo["Id"], errorConv = strconv.Atoi(rubroHijo.Idpsql)
+				if errorConv != nil {
+					beego.Error("Error en conversion", errorConv)
+				}
+
+				hijo["Codigo"] = rubroHijo.Id
+				hijo["Nombre"] = rubroHijo.Nombre
+				hijo["IsLeaf"] = false
+				hijo["UnidadEjecutora"] = rubroHijo.Unidad_ejecutora
+				hijo["ApropiacionInicial"] = rubroHijo.Apropiacion_inicial
+				if len(rubroHijo.Hijos) == 0 {
+					hijo["IsLeaf"] = true
+					hijo["Hijos"] = nil
+					return hijo
+				}
 			}
+		}else{
+			beego.Info("Error en get", errorGet)
 		}
+
+		return hijo
+	}else{
+		return nil
 	}
 
-	return hijo
 }
 
-// @Title RegistrarApropiacionInicial...
+// RegistrarApropiacionInicial ...
+// @Title RegistrarApropiacionInicial
 // @Description Crear ArbolRubroApropiacion2018
 // @Param	body		body 	models.ArbolRubroApropiacion2018 true		"Body para la creacion de ApropiacionInicial"
 // @Success 200 {int} ArbolRubroApropiacion2018.Id
@@ -259,36 +334,50 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 	try.This(func() {
 		vigencia := j.Ctx.Input.Param(":vigencia")
 		if err := json.Unmarshal(j.Ctx.Input.RequestBody, &dataApropiacion); err == nil {
-			session, _ := db.GetSession()
+			session, errGetSession := db.GetSession()
 
-			codigoRubro := dataApropiacion["Codigo"].(string)
-			unidadEjecutora := dataApropiacion["UnidadEjecutora"].(string)
-			if rubro, err = models.GetArbolRubrosById(session, codigoRubro); err != nil {
-				panic(err.Error())
-			}
-
-			nuevaApropiacion := models.ArbolRubroApropiacion{
-				Id:                  codigoRubro,
-				Idpsql:              strconv.Itoa(int(dataApropiacion["Id"].(float64))),
-				Nombre:              dataApropiacion["Nombre"].(string),
-				Descripcion:         "",
-				Unidad_ejecutora:    dataApropiacion["UnidadEjecutora"].(string),
-				Padre:               rubro.Padre,
-				Hijos:               rubro.Hijos,
-				Apropiacion_inicial: int(dataApropiacion["ApropiacionInicial"].(float64)),
-			}
-
-			if nuevaApropiacion.Padre == "" { // Si el rubro actual es una raíz, se hace un registro sencillo
-				session, _ = db.GetSession()
-				models.InsertArbolRubroApropiacion(session, &nuevaApropiacion, unidadEjecutora, vigencia)
-			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
-				if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Idpsql, nuevaApropiacion.Apropiacion_inicial); err != nil {
-					beego.Error("error en construir rama: ", err.Error())
+			if errGetSession == nil {
+				codigoRubro := dataApropiacion["Codigo"].(string)
+				unidadEjecutora := dataApropiacion["UnidadEjecutora"].(string)
+				if rubro, err = models.GetArbolRubrosById(session, codigoRubro); err != nil {
 					panic(err.Error())
 				}
+
+				nuevaApropiacion := models.ArbolRubroApropiacion{
+					Id:                  codigoRubro,
+					Idpsql:              strconv.Itoa(int(dataApropiacion["Id"].(float64))),
+					Nombre:              dataApropiacion["Nombre"].(string),
+					Descripcion:         "",
+					Unidad_ejecutora:    dataApropiacion["UnidadEjecutora"].(string),
+					Padre:               rubro.Padre,
+					Hijos:               rubro.Hijos,
+					Apropiacion_inicial: int(dataApropiacion["ApropiacionInicial"].(float64)),
+				}
+
+				if nuevaApropiacion.Padre == "" { // Si el rubro actual es una raíz, se hace un registro sencillo
+					session, errGetSession := db.GetSession()
+
+					if errGetSession == nil {
+						models.InsertArbolRubroApropiacion(session, &nuevaApropiacion, unidadEjecutora, vigencia)
+					}else{
+						beego.Error("error en GetSession", errGetSession)
+					}
+
+
+				} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
+					if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Idpsql, nuevaApropiacion.Apropiacion_inicial); err != nil {
+						beego.Error("error en construir rama: ", err.Error())
+						panic(err.Error())
+					}
+				}
+
+				j.Data["json"] = map[string]interface{}{"Type": "success"}
+
+			}else{
+				panic(err.Error())
+				beego.Error("session error: ", errGetSession.Error())
 			}
 
-			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		} else {
 			panic(err.Error())
 			beego.Error("unmarshal error: ", err.Error())
@@ -310,36 +399,77 @@ func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int
 	)
 
 	try.This(func() {
-		session, _ := db.GetSession()
-		actualRubro, err = models.GetArbolRubrosById(session, codigoRubro)
-		actualRubro.Unidad_Ejecutora = ue
-		session, _ = db.GetSession()
-		padreApropiacion, _ = models.GetArbolRubroApropiacionById(session, actualRubro.Padre, ue, vigencia)
+		session, errGetSession := db.GetSession()
 
-		if padreApropiacion == nil {
-			session, _ = db.GetSession()
-			actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
-			models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
-			if actualApropiacion.Padre != "" {
-				construirRama(actualRubro.Padre, ue, vigencia, actualRubro.Idpsql, actualApropiacion.Apropiacion_inicial)
+		if errGetSession == nil {
+			actualRubro, err = models.GetArbolRubrosById(session, codigoRubro)
+			actualRubro.Unidad_Ejecutora = ue
+			session, errGetSession := db.GetSession()
+
+			if errGetSession == nil {
+				padreApropiacion, _ = models.GetArbolRubroApropiacionById(session, actualRubro.Padre, ue, vigencia)
+
+				if padreApropiacion == nil {
+					session, errGetSession := db.GetSession()
+
+					if errGetSession == nil {
+						actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
+						models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
+						if actualApropiacion.Padre != "" {
+							if errorConstruir := construirRama(actualRubro.Padre, ue, vigencia, actualRubro.Idpsql, actualApropiacion.Apropiacion_inicial); errorConstruir != nil{
+								beego.Error("error en construir rama: ", errorConstruir.Error())
+								panic(errorConstruir.Error())
+							}
+						}
+					}else{
+						beego.Error("error en GetSession", errGetSession)
+					}
+
+				} else {
+					session, errGetSession := db.GetSession()
+
+					if errGetSession == nil {
+						apropiacionActualizada, _ := models.GetArbolRubroApropiacionById(session, codigoRubro, ue, vigencia)
+						apropiacionAnterior := 0
+						session, errGetSession := db.GetSession()
+
+						if errGetSession == nil {
+							if apropiacionActualizada != nil {
+								apropiacionAnterior = apropiacionActualizada.Apropiacion_inicial
+								apropiacionActualizada.Apropiacion_inicial = nuevaApropiacion
+								if errorUpdate := models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, ue, vigencia); errorUpdate != nil{
+									beego.Error("Error al hacer update en arbol Rubro Apropiacion", errorUpdate.Error())
+								}
+							} else {
+								actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
+								models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
+							}
+
+							if errorPropagar :=propagarCambio(padreApropiacion.Id, ue, vigencia, nuevaApropiacion-apropiacionAnterior); errorPropagar != nil{
+								beego.Error("Error en propagar cambio", errorPropagar.Error())
+							}
+						}else{
+							beego.Error("error en GetSession", errGetSession)
+						}
+
+
+					}else{
+						beego.Error("error en GetSession", errGetSession)
+					}
+
+
+
+				}
+			}else{
+				beego.Error("error en GetSession", errGetSession)
 			}
-		} else {
-			session, _ = db.GetSession()
-			apropiacionActualizada, _ := models.GetArbolRubroApropiacionById(session, codigoRubro, ue, vigencia)
-			apropiacionAnterior := 0
-			session, _ = db.GetSession()
-			if apropiacionActualizada != nil {
-				apropiacionAnterior = apropiacionActualizada.Apropiacion_inicial
-				apropiacionActualizada.Apropiacion_inicial = nuevaApropiacion
-				models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, ue, vigencia)
-			} else {
-				actualApropiacion = crearNuevaApropiacion(actualRubro, idApr, nuevaApropiacion)
-				models.InsertArbolRubroApropiacion(session, actualApropiacion, ue, vigencia)
-			}
 
-			propagarCambio(padreApropiacion.Id, ue, vigencia, nuevaApropiacion-apropiacionAnterior)
 
+		}else{
+			beego.Error("error en GetSession", errGetSession)
 		}
+
+
 
 	}).Catch(func(e try.E) {
 		beego.Error("catch error: ", e)
@@ -353,19 +483,38 @@ func propagarCambio(codigoRubro, ue, vigencia string, valorPropagado int) error 
 
 	try.This(func() { // try catch para recibir errores
 
-		session, _ := db.GetSession()
-		apropiacionActualizada, err := models.GetArbolRubroApropiacionById(session, codigoRubro, ue, vigencia)
-		apropiacionActualizada.Apropiacion_inicial += valorPropagado
+		session, errGetSession := db.GetSession()
 
-		if err != nil {
-			panic(err.Error())
-		}
-		session, _ = db.GetSession()
-		models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, ue, vigencia)
+		if errGetSession == nil {
+			apropiacionActualizada, err := models.GetArbolRubroApropiacionById(session, codigoRubro, ue, vigencia)
+			apropiacionActualizada.Apropiacion_inicial += valorPropagado
 
-		if apropiacionActualizada.Padre != "" {
-			propagarCambio(apropiacionActualizada.Padre, ue, vigencia, valorPropagado)
+			if err != nil {
+				panic(err.Error())
+			}
+			session, errGetSession := db.GetSession()
+
+			if errGetSession == nil {
+				if errorUpdate := models.UpdateArbolRubroApropiacion(session, *apropiacionActualizada, apropiacionActualizada.Id, ue, vigencia); errorUpdate != nil{
+					beego.Error("Error Update Arbol Rubro Apropiacion: ", errorUpdate.Error())
+				}
+
+				if apropiacionActualizada.Padre != "" {
+					if errorPropagar := propagarCambio(apropiacionActualizada.Padre, ue, vigencia, valorPropagado); errorPropagar != nil{
+						beego.Error("Error en propagar Cambio: ", errorPropagar.Error())
+					}
+				}
+
+			}else {
+				beego.Error("error en GetSession", errGetSession.Error())
+			}
+
+
+		}else{
+			beego.Error("error en GetSession", errGetSession.Error())
 		}
+
+
 	}).Catch(func(e try.E) {
 		beego.Error("catch error: ", e)
 		err = errors.New("unknow error")
@@ -457,7 +606,10 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 		unidadEjecutora := strconv.Itoa(int(dataValor["UnidadEjecutora"].(float64)))
 		fechaRegistro := dataValor["FechaMovimiento"].(string)
 		vigencia := strconv.Itoa(int(dataValor["Vigencia"].(float64)))
-		mes, _ := time.Parse("2006-01-02", fechaRegistro)
+		mes, errorFecha := time.Parse("2006-01-02", fechaRegistro)
+		if (errorFecha != nil){
+			beego.Info ("error en fecha", errorFecha.Error())
+		}
 
 		opsApr := registrarValoresModf(dataValor["Afectacion"].([]interface{}), strconv.Itoa(int(mes.Month())), vigencia, unidadEjecutora)
 
@@ -477,12 +629,19 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 			}
 			modificacionApr.RubrosAfecta = append(modificacionApr.RubrosAfecta, value)
 
-			session, _ := db.GetSession()
-			op, err := models.EstrctTransaccionMov(session, &modificacionApr)
-			if err != nil {
-				panic(err.Error())
+			session, errGetSession := db.GetSession()
+
+			if errGetSession == nil {
+				op, err := models.EstrctTransaccionMov(session, &modificacionApr)
+				if err != nil {
+					panic(err.Error())
+				}
+				ops = append(ops, op)
+			}else{
+				beego.Error("error en GetSession", errGetSession.Error())
 			}
-			ops = append(ops, op)
+
+
 
 		}
 		ops = append(ops, opsApr...)
@@ -490,8 +649,13 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 		for i := range ops {
 			fmt.Println(ops[i], "\n......")
 		}
-		session, _ := db.GetSession()
-		err = models.RegistrarMovimiento(session, ops)
+		session, errGetSession := db.GetSession()
+		if errGetSession == nil {
+			err = models.RegistrarMovimiento(session, ops)
+		}else{
+			beego.Error("error en GetSession", errGetSession.Error())
+		}
+
 	}).Catch(func(e try.E) {
 		beego.Error("catch error registrar modificación apropiación")
 		panic(e)
@@ -522,11 +686,17 @@ func crearCdp(dataMovimiento map[string]interface{}, unidadEjecutora, fechaRegis
 		}
 		cdp.RubrosAfecta = append(cdp.RubrosAfecta, rubrosAfecta)
 
-		session, _ := db.GetSession()
-		op, err = models.EstrctTransaccionMov(session, &cdp)
-		if err != nil {
-			panic(err.Error())
+		session, errGetSession := db.GetSession()
+
+		if errGetSession == nil{
+			op, err = models.EstrctTransaccionMov(session, &cdp)
+			if err != nil {
+				panic(err.Error())
+			}
+		}else{
+			beego.Error("error en GetSession", errGetSession.Error())
 		}
+
 	}).Catch(func(e try.E) {
 		beego.Error("catch error en crearCdp")
 		panic(e)
@@ -623,43 +793,56 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			unidadEjecutora := v.(map[string]interface{})["UnidadEjecutora"].(string)
 			vigencia := dataValor["Vigencia"].(string)
 
-			session, _ := db.GetSession()
-			beego.Info(rubro, " |", unidadEjecutora, " |", vigencia)
-			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
+			session, errGetSession := db.GetSession()
 
-			if err != nil {
-				panic(err.Error())
+			if errGetSession == nil {
+				beego.Info(rubro, " |", unidadEjecutora, " |", vigencia)
+				rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
+
+				if err != nil {
+					panic(err.Error())
+				}
+
+				nuevoValor := make(map[string]float64)
+
+				if len(rubroApropiacion.Movimientos) == 0 {
+					rubroApropiacion.Movimientos = make(map[string]map[string]float64)
+					rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
+				}
+
+				if rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] == nil {
+					rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
+				}
+
+				nuevoValor[mes] = v.(map[string]interface{})["Valor"].(float64)
+				nuevoValor[total] = v.(map[string]interface{})["Valor"].(float64)
+
+				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][mes] = v.(map[string]interface{})["Valor"].(float64)
+				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][total] += v.(map[string]interface{})["Valor"].(float64)
+
+				//models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
+				ops, err = prograpacionValores(rubroApropiacion.Id, dataValor["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
+				if err != nil {
+					panic(err.Error())
+				}
+			}else{
+				beego.Error("error en GetSession", errGetSession.Error())
 			}
 
-			nuevoValor := make(map[string]float64)
 
-			if len(rubroApropiacion.Movimientos) == 0 {
-				rubroApropiacion.Movimientos = make(map[string]map[string]float64)
-				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
-			}
-
-			if rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] == nil {
-				rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)] = make(map[string]float64)
-			}
-
-			nuevoValor[mes] = v.(map[string]interface{})["Valor"].(float64)
-			nuevoValor[total] = v.(map[string]interface{})["Valor"].(float64)
-
-			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][mes] = v.(map[string]interface{})["Valor"].(float64)
-			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][total] += v.(map[string]interface{})["Valor"].(float64)
-
-			//models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
-			ops, err = prograpacionValores(rubroApropiacion.Id, dataValor["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
-			if err != nil {
-				panic(err.Error())
-			}
 		}
 
 		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
 		ops = append(ops, op...)
 
-		session, _ := db.GetSession()
-		models.RegistrarMovimiento(session, ops)
+		session, errGetSession := db.GetSession()
+
+		if errGetSession == nil{
+			err = models.RegistrarMovimiento(session, ops)
+		}else{
+			beego.Error("error en GetSession", errGetSession.Error())
+		}
+
 	}).Catch(func(e try.E) {
 		beego.Error("catch error registrar valores: ", e)
 		panic(e)
@@ -687,19 +870,25 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 			Vigencia:       dataValor["Vigencia"].(string),
 			DocumentoPadre: strconv.Itoa(int(documentoPadre)), // si el documento padre esta vacio (no tiene) el valor guardado es 0 (?)
 		}
-		session, _ := db.GetSession()
-		op, err := models.EstrctTransaccionMov(session, &movimiento)
-		if err != nil {
-			panic(err.Error())
-		}
-		ops = append(ops, op)
+		session, errGetSession := db.GetSession()
 
-		opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento, tipoMovimiento) // opp son los movimientos a propagar en la tx de mongodb
+		if errGetSession == nil {
+			op, err := models.EstrctTransaccionMov(session, &movimiento)
+			if err != nil {
+				panic(err.Error())
+			}
+			ops = append(ops, op)
 
-		ops = append(ops, opp...)
-		if err != nil {
-			panic(err.Error())
+			opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento, tipoMovimiento) // opp son los movimientos a propagar en la tx de mongodb
+
+			ops = append(ops, opp...)
+			if err != nil {
+				panic(err.Error())
+			}
+		}else{
+			beego.Error("error en GetSession", errGetSession.Error())
 		}
+
 	}).Catch(func(e try.E) {
 		beego.Error("error en registrar RP ", e)
 		panic(e)
@@ -709,32 +898,44 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 
 // H
 func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp, tMovimiento string) (op []interface{}, err error) {
-	session, _ := db.GetSession()
-	selectTipoMovimientoPadre(tMovimiento)
-	padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre, tipoMovimientoPadre)
+	session, errGetSession := db.GetSession()
 
-	if padre != nil {
-		afectacionWalk(&Rp, padre)
-		session, _ = db.GetSession()
-		opM, err := models.EstrctUpdateTransaccionMov(session, padre) //opM es la tx del movimiento a actualizar
-		if err != nil {
-			panic(err.Error())
+	if errGetSession == nil {
+		selectTipoMovimientoPadre(tMovimiento)
+		padre, _ := models.GetMovimientoByPsqlId(session, documentoPadre, tipoMovimientoPadre)
+
+		if padre != nil {
+			afectacionWalk(&Rp, padre)
+			session, errGetSession = db.GetSession()
+
+			if errGetSession == nil {
+				opM, err := models.EstrctUpdateTransaccionMov(session, padre) //opM es la tx del movimiento a actualizar
+				if err != nil {
+					panic(err.Error())
+				}
+
+				op = append(op, opM)
+
+				opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp, tipoMovimientoPadre)
+				if err != nil {
+					panic(err.Error())
+				}
+				op = append(op, opp...)
+
+			}else{
+				beego.Error("error en GetSession", errGetSession.Error())
+			}
+
 		}
+		// ???
+		for _, imp := range op {
+			beego.Info("ops........ controller ", imp, "\n")
 
-		op = append(op, opM)
-
-		opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp, tipoMovimientoPadre)
-		if err != nil {
-			panic(err.Error())
 		}
-		op = append(op, opp...)
-
+	}else{
+		beego.Error("error en GetSession", errGetSession.Error())
 	}
-	// ???
-	for _, imp := range op {
-		beego.Info("ops........ controller ", imp, "\n")
 
-	}
 	return
 }
 
