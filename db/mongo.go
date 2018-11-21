@@ -2,12 +2,10 @@ package db
 
 import (
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/astaxie/beego"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 // Cursor devuelve un apuntador con la conexión a la bd y la colección especifica
@@ -33,8 +31,6 @@ func GetSession() (*mgo.Session, error) {
 		Password: mongoPassword,
 	}
 
-	// beego.Info("mongoHost: ", mongoHost, "mongoUser: ", mongoUser, "mongoPassword: ", mongoPassword, "mongoDatabase: ", mongoDatabase)
-
 	session, err := mgo.DialWithInfo(info)
 	if err != nil {
 		fmt.Println("Helo this is an error!")
@@ -44,20 +40,4 @@ func GetSession() (*mgo.Session, error) {
 	}
 
 	return session, err
-}
-
-func GetAll(session *mgo.Session, collection string) []bson.M {
-	c := Cursor(session, collection)
-	defer session.Close()
-	var records []bson.M
-	err := c.Find(bson.M{}).All(&records)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return records
-}
-
-func getType(i interface{}) interface{} {
-	return reflect.New(reflect.TypeOf(i))
 }

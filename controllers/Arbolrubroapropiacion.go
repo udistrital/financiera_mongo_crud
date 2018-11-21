@@ -613,7 +613,6 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			}
 			ops = append(ops, op...)
 		}
-		// beego.Info("ops: ", ops)
 	}).Catch(func(e try.E) {
 		beego.Error("catch error en registrarValoresModificaciones")
 		panic(e)
@@ -667,7 +666,7 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			vigencia := dataValor["Vigencia"].(string)
 
 			session, _ := db.GetSession()
-			beego.Info(rubro, " |", unidadEjecutora, " |", vigencia)
+
 			rubroApropiacion, err := models.GetArbolRubroApropiacionById(session, rubro, unidadEjecutora, vigencia)
 
 			if err != nil {
@@ -691,16 +690,11 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][mes] = v.(map[string]interface{})["Valor"].(float64)
 			rubroApropiacion.Movimientos[dataValor["MesRegistro"].(string)][total] += v.(map[string]interface{})["Valor"].(float64)
 
-			//models.UpdateArbolRubroApropiacion(session, *rubroApropiacion, rubroApropiacion.Id, rubroApropiacion.Unidad_ejecutora, vigencia)
 			ops, err = prograpacionValores(rubroApropiacion.Id, dataValor["MesRegistro"].(string), vigencia, unidadEjecutora, nuevoValor)
 			if err != nil {
 				panic(err.Error())
 			}
 		}
-
-		beego.Info("dataValor: ", dataValor)
-		beego.Info("total: ", total)
-		beego.Info("mes: ", mes)
 
 		op, err = registrarDocumentoMovimiento(dataValor, total, mes)
 
@@ -722,9 +716,6 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		documentoPadre, _ := dataValor["Disponibilidad"].(float64)
 
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
-			//rubroAfecta.(map[string]interface{})[tipoTotal] = 0.0
-			//rubroAfecta.(map[string]interface{})["TotalComprometido"] = 0.0
-
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
 		}
 
@@ -778,11 +769,7 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp, tM
 		op = append(op, opp...)
 
 	}
-	// ???
-	for _, imp := range op {
-		beego.Info("ops........ controller ", imp, "\n")
 
-	}
 	return
 }
 
@@ -821,7 +808,6 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 		}
 
 		for apropiacionPadre != nil {
-			beego.Info()
 			if apropiacionPadre.Movimientos[mes] == nil {
 				apropiacionPadre.Movimientos[mes] = make(map[string]float64)
 			}
@@ -862,7 +848,6 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 		session, _ = db.GetSession()
 		options, err := models.EstrctTransaccionArbolApropiacion(session, apropiacionesCdp, ue, vigencia)
 		if err != nil {
-			beego.Error("Error en transacción de arbolRbubroApropiacion")
 			panic(err.Error())
 		}
 		for _, obj := range options {
@@ -919,7 +904,7 @@ func (j *ArbolRubroApropiacionController) SaldoApropiacion() {
 
 		session, _ := db.GetSession()
 		rubro, err := models.GetArbolRubroApropiacionById(session, rubroParam, strconv.Itoa(unidadEParam), strconv.Itoa(vigenciaParam))
-		beego.Info("rubros: ", rubro)
+
 		for _, value := range rubro.Movimientos {
 			for key, data := range value {
 				response[key] += data
