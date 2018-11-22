@@ -75,6 +75,9 @@ func GetArbolRubrosByIdPsql(session *mgo.Session, idPsql string) (ArbolRubros, e
 	return rubro, err
 }
 
+/*
+ Obtiene un nodo del arbol a partir de su id y su unidad ejecutora
+*/
 func GetNodo(session *mgo.Session, id, ue string) (ArbolRubros, error) {
 	c := db.Cursor(session, ArbolRubrosCollection)
 	defer session.Close()
