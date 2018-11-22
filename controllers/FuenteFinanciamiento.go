@@ -59,7 +59,7 @@ func (c *FuenteFinanciamientoController) Post() {
 
 			fuentePadre = &models.FuenteFinaciamientoPadre{
 				ID:              infoFuente["Codigo"].(string),
-				UnidadEjecutora: 0,
+				UnidadEjecutora: int(infoFuente["UnidadEjecutora"].(float64)),
 				Descripcion:     infoFuente["Descripcion"].(string),
 				IDPsql:          int(infoFuente["Id"].(float64)),
 				Nombre:          infoFuente["Nombre"].(string),
@@ -90,7 +90,7 @@ func (c *FuenteFinanciamientoController) Post() {
 				IDPsql:          "3",
 				RubrosAfecta:    RubrosAfecta,
 				ValorOriginal:   v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Valor"].(float64),
-				Tipo:            v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["TipoMovimiento"].(map[string]interface{})["Nombre"].(string),
+				Tipo:            "fuente_financiamiento_" + v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["TipoMovimiento"].(map[string]interface{})["Nombre"].(string),
 				Vigencia:        "2018",
 				DocumentoPadre:  fuentePadre.ID,
 				FechaRegistro:   v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Fecha"].(string),
