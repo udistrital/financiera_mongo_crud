@@ -111,10 +111,10 @@ func (c *FuenteFinanciamientoController) Post() {
 		}
 
 		defer session.Close()
-		c.Data["json"] = "ok"
+		c.Data["json"] = map[string]interface{}{"Type": "success"}
 	}).Catch(func(e try.E) {
 		beego.Error("error en Post() ", e)
-		c.Data["json"] = e
+		c.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 	c.ServeJSON()
 }

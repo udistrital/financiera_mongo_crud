@@ -529,7 +529,6 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 
 		}
 		ops = append(ops, opsApr...)
-		beego.Info("ops en registarModifcacionApr: ")
 		for i := range ops {
 			fmt.Println(ops[i], "\n......")
 		}
@@ -599,9 +598,7 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			if data["TipoMovimiento"].(string) != "Traslado" {
 				formatModifGeneral(data, nuevoValor)
 			} else {
-
 				formatModifTraslado(data, nuevoValor)
-				beego.Info("nuevoValor: ", nuevoValor)
 			}
 
 		}
