@@ -32,9 +32,7 @@ func (c *FuenteFinanciamientoController) Post() {
 	var (
 		fuente, infoFuente, tipoFuente map[string]interface{}
 		movimientosFuente              []map[string]interface{}
-		// movimientos                    []models.MovimientoCdp
-		// infoFuente map[string]interface{}
-		// tipoFuente
+		options                        []interface{}
 	)
 
 	try.This(func() {
@@ -51,11 +49,9 @@ func (c *FuenteFinanciamientoController) Post() {
 			panic(err)
 		}
 
-		options := make(map[string]interface{})
 		fuentePadre := models.GetFuenteFinanciamientoPadreByID(session, infoFuente["Codigo"].(string))
 
 		if fuentePadre == nil { // en caso de que el padre sea nulo, se registra un nuevo padre
-
 			err := formatdata.FillStruct(fuente["TipoFuenteFinanciamiento"], &tipoFuente)
 			if err != nil { // error convirtiendo a tipo fuente
 				panic(err)
@@ -70,12 +66,12 @@ func (c *FuenteFinanciamientoController) Post() {
 				TipoFuente:      tipoFuente["Nombre"],
 				ValorOriginal:   calcularValorOriginal(fuente["AfectacionFuente"].([]interface{})),
 			}
-
-			options["FuentePadre"] = fuentePadre
-			err = models.TrRegistroFuente(session, options)
+			op, err := models.EstructaRegistroFuentePadreTransaccion(session, fuentePadre)
 			if err != nil {
+				beego.Error("Error al creae estructura de fuente padre")
 				panic(err)
 			}
+			options = append(options, op)
 		}
 
 		err = formatdata.FillStruct(fuente["AfectacionFuente"], &movimientosFuente)
@@ -101,11 +97,18 @@ func (c *FuenteFinanciamientoController) Post() {
 				UnidadEjecutora: v["UnidadEjecutora"].(string),
 			}
 
-			beego.Info("movimiento", movimiento)
+			op, err := models.EstrctTransaccionMov(session, &movimiento)
+			if err != nil {
+				beego.Error("Error en estructura de movimiento para fuente de financiamiento")
+				panic(err)
+			}
+			options = append(options, op)
 		}
 
-		options["MovimientosFuente"] = fuente["AfectacionFuente"]
-		// beego.Info("fuentePadre: ", fuentePadre)
+		err = models.TrRegistroFuente(session, options)
+		if err != nil {
+			panic(err)
+		}
 
 		defer session.Close()
 		c.Data["json"] = "ok"
@@ -113,7 +116,6 @@ func (c *FuenteFinanciamientoController) Post() {
 		beego.Error("error en Post() ", e)
 		c.Data["json"] = e
 	})
-
 	c.ServeJSON()
 }
 

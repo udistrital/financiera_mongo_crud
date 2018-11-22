@@ -4,6 +4,7 @@ import (
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/txn"
 )
 
 // FuenteFinaciamientoPadre ...
@@ -50,4 +51,15 @@ func GetFuenteFinanciamientoPadreByID(session *mgo.Session, id string) *FuenteFi
 		return nil
 	}
 	return fuenteFinaciamientoPadre
+}
+
+func EstructaRegistroFuentePadreTransaccion(session *mgo.Session, estructura *FuenteFinaciamientoPadre) (op txn.Op, err error) {
+	estructura.ID = bson.NewObjectId().Hex()
+	op = txn.Op{
+		C:      fuenteFinanciamientoPadre,
+		Id:     estructura.ID,
+		Assert: "d-",
+		Insert: estructura,
+	}
+	return op, err
 }
