@@ -20,10 +20,11 @@ type FuenteFinaciamientoPadre struct {
 
 // FuenteMovimiento ...
 type FuenteMovimiento struct {
-	ID                string
-	Rubro             string
-	DependenciaIDPsql string
-	Saldo             float64
+	ID                string `orm:"size(128)"`
+	IDPsql 			  string `json:"idpsql"`
+	Rubro             string `json:"rubro"`
+	DependenciaIDPsql string `json:"dependencia_idpsql"`
+	Saldo             float64 `json:"saldo"`
 }
 
 // ArbolRubroApropiacion2018Collection constante para la colección
@@ -53,6 +54,7 @@ func GetFuenteFinanciamientoPadreByID(session *mgo.Session, id string) *FuenteFi
 	return fuenteFinaciamientoPadre
 }
 
+// EstructaRegistroFuentePadreTransaccion crea una estructura para FuenteFinanciamientoPadre de tipo registro. 
 func EstructaRegistroFuentePadreTransaccion(session *mgo.Session, estructura *FuenteFinaciamientoPadre) (op txn.Op, err error) {
 	estructura.ID = bson.NewObjectId().Hex()
 	op = txn.Op{

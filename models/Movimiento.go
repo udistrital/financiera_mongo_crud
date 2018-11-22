@@ -7,20 +7,20 @@ import (
 	"gopkg.in/mgo.v2/txn"
 )
 
+// MovimientosCollection es el nombre de la colección en mongo.
 const MovimientosCollection = "movimientos"
 
+// MovimientoCdp es una estructura generica para los tipos de movimiento registados.
 type MovimientoCdp struct {
-	ID            string                   `json:"_id" bson:"_id,omitempty"`
-	IDPsql        string                   `json:"idpsql"`
-	RubrosAfecta  []map[string]interface{} `json:"rubros_afecta"`
-	ValorOriginal float64                  `json:"valor_original"`
-	// TotalAnulado      float64                  `json:"total_anulado"`
-	// TotalComprometido float64                  `json:"total_comprometido"`
-	Tipo            string `json:"tipo"`
-	Vigencia        string `json:"vigencia"`
-	DocumentoPadre  string `json:"documento_padre"`
-	FechaRegistro   string `json:"fecha_registro"`
-	UnidadEjecutora string `json:"unidad_ejecutora"`
+	ID              string                   `json:"_id" bson:"_id,omitempty"`
+	IDPsql          string                   `json:"idpsql"`
+	RubrosAfecta    []map[string]interface{} `json:"rubros_afecta"`
+	ValorOriginal   float64                  `json:"valor_original"`
+	Tipo            string                   `json:"tipo"`
+	Vigencia        string                   `json:"vigencia"`
+	DocumentoPadre  string                   `json:"documento_padre"`
+	FechaRegistro   string                   `json:"fecha_registro"`
+	UnidadEjecutora string                   `json:"unidad_ejecutora"`
 }
 
 // GetMovimientoByPsqlId Obtener un documento por el idpsql
@@ -32,8 +32,8 @@ func GetMovimientoByPsqlId(session *mgo.Session, id, tipo string) (*MovimientoCd
 	return movimientoCdp, err
 }
 
+// EstrctTransaccionMov crea una transacción para MovimientoCdp de tipo registro.
 func EstrctTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops txn.Op, err error) {
-	// id :=
 	estructura.ID = bson.NewObjectId().Hex()
 	op := txn.Op{
 		C:      MovimientosCollection,
@@ -44,9 +44,8 @@ func EstrctTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops 
 	return op, err
 }
 
+// EstrctUpdateTransaccionMov crea una transacción para MovimientoCdp de tipo update.
 func EstrctUpdateTransaccionMov(session *mgo.Session, estructura *MovimientoCdp) (ops txn.Op, err error) {
-	// fmt.Println("Id:    ", estructura.ID)
-	// estructura.ID = bson.NewObjectId().Hex()
 	op := txn.Op{
 		C:      MovimientosCollection,
 		Id:     estructura.ID,

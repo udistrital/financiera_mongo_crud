@@ -7,7 +7,6 @@ import (
 	"github.com/manucorporat/try"
 	"github.com/udistrital/financiera_mongo_crud/db"
 
-	// "github.com/udistrital/financiera_mongo_crud/db"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/mgo.v2/txn"
