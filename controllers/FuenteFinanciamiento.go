@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"encoding/json"
-
 	"github.com/astaxie/beego"
 	"github.com/manucorporat/try"
 	"github.com/udistrital/financiera_mongo_crud/db"
 	"github.com/udistrital/financiera_mongo_crud/models"
 	"github.com/udistrital/utils_oas/formatdata"
+	"strconv"
 )
 
 // FuenteFinanciamientoController operations for FuenteFinanciamiento
@@ -59,7 +59,7 @@ func (c *FuenteFinanciamientoController) Post() {
 
 			fuentePadre = &models.FuenteFinaciamientoPadre{
 				ID:              infoFuente["Codigo"].(string),
-				UnidadEjecutora: 0,
+				UnidadEjecutora: int(infoFuente["UnidadEjecutora"].(float64)),
 				Descripcion:     infoFuente["Descripcion"].(string),
 				IDPsql:          int(infoFuente["Id"].(float64)),
 				Nombre:          infoFuente["Nombre"].(string),
@@ -94,7 +94,7 @@ func (c *FuenteFinanciamientoController) Post() {
 				Vigencia:        "2018",
 				DocumentoPadre:  fuentePadre.ID,
 				FechaRegistro:   v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Fecha"].(string),
-				UnidadEjecutora: v["UnidadEjecutora"].(string),
+				UnidadEjecutora: strconv.Itoa(int(infoFuente["UnidadEjecutora"].(float64))),
 			}
 
 			op, err := models.EstrctTransaccionMov(session, &movimiento)
