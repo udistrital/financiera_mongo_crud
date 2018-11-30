@@ -9,7 +9,7 @@ import (
 
 // FuenteFinaciamientoPadre ...
 type FuenteFinaciamientoPadre struct {
-	ID              string      `orm:"size(128)"`
+	ID              string      `json:"_id" bson:"_id,omitempty"`
 	UnidadEjecutora int         `json:"unidad_ejecutora"`
 	Descripcion     string      `json:"descripcion"`
 	IDPsql          int         `json:"idpsql"`
@@ -20,10 +20,10 @@ type FuenteFinaciamientoPadre struct {
 
 // FuenteMovimiento ...
 type FuenteMovimiento struct {
-	ID                string `orm:"size(128)"`
-	IDPsql 			  string `json:"idpsql"`
-	Rubro             string `json:"rubro"`
-	DependenciaIDPsql string `json:"dependencia_idpsql"`
+	ID                string  `orm:"size(128)"`
+	IDPsql            string  `json:"idpsql"`
+	Rubro             string  `json:"rubro"`
+	DependenciaIDPsql string  `json:"dependencia_idpsql"`
 	Saldo             float64 `json:"saldo"`
 }
 
@@ -54,7 +54,7 @@ func GetFuenteFinanciamientoPadreByID(session *mgo.Session, id string) *FuenteFi
 	return fuenteFinaciamientoPadre
 }
 
-// EstructaRegistroFuentePadreTransaccion crea una estructura para FuenteFinanciamientoPadre de tipo registro. 
+// EstructaRegistroFuentePadreTransaccion crea una estructura para FuenteFinanciamientoPadre de tipo registro.
 func EstructaRegistroFuentePadreTransaccion(session *mgo.Session, estructura *FuenteFinaciamientoPadre) (op txn.Op, err error) {
 	estructura.ID = bson.NewObjectId().Hex()
 	op = txn.Op{
