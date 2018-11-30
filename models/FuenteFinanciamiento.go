@@ -55,7 +55,7 @@ func GetFuenteFinanciamientoPadreByID(session *mgo.Session, id string) *FuenteFi
 }
 
 // GetFuenteFinanciamientoPadreByIDPsql Obtener un documento por el idpsql
-func GetFuenteFinanciamientoPadreByIDPsql(session *mgo.Session, id string) *FuenteFinaciamientoPadre {
+func GetFuenteFinanciamientoPadreByIDPsql(session *mgo.Session, id int) *FuenteFinaciamientoPadre {
 	c := db.Cursor(session, fuenteFinanciamientoPadre)
 	var fuenteFinaciamientoPadre *FuenteFinaciamientoPadre
 	err := c.Find(bson.M{"idpsql": id}).One(&fuenteFinaciamientoPadre)

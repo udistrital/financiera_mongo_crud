@@ -112,7 +112,7 @@ func crearFuenetPadre(informacionFuente map[string]interface{}, valorOriginal fl
 	}
 	defer session.Close()
 
-	fuentePadre := models.GetFuenteFinanciamientoPadreByIDPsql(session, informacionFuente["Codigo"].(string))
+	fuentePadre := models.GetFuenteFinanciamientoPadreByIDPsql(session, int(informacionFuente["Id"].(float64)))
 	if fuentePadre != nil {
 		return
 	}
