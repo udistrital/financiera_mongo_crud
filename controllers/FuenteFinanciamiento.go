@@ -72,14 +72,13 @@ func (c *FuenteFinanciamientoController) Post() {
 			RubrosAfecta := []map[string]interface{}{rubroAfecta}
 
 			movimiento := models.MovimientoCdp{
-				IDPsql:          "3",
-				RubrosAfecta:    RubrosAfecta,
-				ValorOriginal:   v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Valor"].(float64),
-				Tipo:            "fuente_financiamiento_" + v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["TipoMovimiento"].(map[string]interface{})["Nombre"].(string),
-				Vigencia:        "2018",
-				DocumentoPadre:  strconv.Itoa(int(infoFuente["Id"].(float64))),
-				FechaRegistro:   v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Fecha"].(string),
-				UnidadEjecutora: strconv.Itoa(int(infoFuente["UnidadEjecutora"].(float64))),
+				IDPsql:         "3",
+				RubrosAfecta:   RubrosAfecta,
+				ValorOriginal:  v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Valor"].(float64),
+				Tipo:           "fuente_financiamiento_" + v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["TipoMovimiento"].(map[string]interface{})["Nombre"].(string),
+				Vigencia:       "2018",
+				DocumentoPadre: strconv.Itoa(int(infoFuente["Id"].(float64))),
+				FechaRegistro:  v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{})[0].(map[string]interface{})["Fecha"].(string),
 			}
 
 			op, err = models.EstrctTransaccionMov(session, &movimiento)
@@ -124,13 +123,12 @@ func crearFuenetPadre(informacionFuente map[string]interface{}, valorOriginal fl
 	}
 
 	fuentePadre = &models.FuenteFinaciamientoPadre{
-		ID:              informacionFuente["Codigo"].(string),
-		UnidadEjecutora: int(informacionFuente["UnidadEjecutora"].(float64)),
-		Descripcion:     informacionFuente["Descripcion"].(string),
-		IDPsql:          int(informacionFuente["Id"].(float64)),
-		Nombre:          informacionFuente["Nombre"].(string),
-		TipoFuente:      tipoFuente,
-		ValorOriginal:   valorOriginal,
+		ID:            informacionFuente["Codigo"].(string),
+		Descripcion:   informacionFuente["Descripcion"].(string),
+		IDPsql:        int(informacionFuente["Id"].(float64)),
+		Nombre:        informacionFuente["Nombre"].(string),
+		TipoFuente:    tipoFuente,
+		ValorOriginal: valorOriginal,
 	}
 	op, err = models.EstructaRegistroFuentePadreTransaccion(session, fuentePadre)
 	if err != nil {
