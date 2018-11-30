@@ -54,6 +54,17 @@ func GetFuenteFinanciamientoPadreByID(session *mgo.Session, id string) *FuenteFi
 	return fuenteFinaciamientoPadre
 }
 
+// GetFuenteFinanciamientoPadreByIDPsql Obtener un documento por el idpsql
+func GetFuenteFinanciamientoPadreByIDPsql(session *mgo.Session, id string) *FuenteFinaciamientoPadre {
+	c := db.Cursor(session, fuenteFinanciamientoPadre)
+	var fuenteFinaciamientoPadre *FuenteFinaciamientoPadre
+	err := c.Find(bson.M{"idpsql": id}).One(&fuenteFinaciamientoPadre)
+	if err != nil {
+		return nil
+	}
+	return fuenteFinaciamientoPadre
+}
+
 // EstructaRegistroFuentePadreTransaccion crea una estructura para FuenteFinanciamientoPadre de tipo registro.
 func EstructaRegistroFuentePadreTransaccion(session *mgo.Session, estructura *FuenteFinaciamientoPadre) (op txn.Op, err error) {
 	estructura.ID = bson.NewObjectId().Hex()
