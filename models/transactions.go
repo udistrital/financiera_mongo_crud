@@ -21,7 +21,9 @@ func TrRegistroFuente(session *mgo.Session, options []interface{}) (err error) {
 		runner := txn.NewRunner(c)
 
 		for _, op := range options {
-			ops = append(ops, op.(txn.Op))
+			if op != nil {
+				ops = append(ops, op.(txn.Op))
+			}
 		}
 
 		id := bson.NewObjectId()

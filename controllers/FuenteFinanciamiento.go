@@ -56,12 +56,10 @@ func (c *FuenteFinanciamientoController) Post() {
 			}
 
 			valorOriginal := calcularValorOriginal(v["MovimientoFuenteFinanciamientoApropiacion"].([]interface{}))
-			beego.Info("valor original: ", valorOriginal)
 			err, op := crearFuenetPadre(infoFuente, valorOriginal)
 			if err != nil {
 				panic(err)
 			}
-
 			options = append(options, op)
 
 			rubroAfecta := map[string]interface{}{
@@ -88,7 +86,6 @@ func (c *FuenteFinanciamientoController) Post() {
 			}
 			options = append(options, op)
 		}
-
 		err = models.TrRegistroFuente(session, options)
 		if err != nil {
 			panic(err)
@@ -103,6 +100,8 @@ func (c *FuenteFinanciamientoController) Post() {
 	c.ServeJSON()
 }
 
+// crearFuenetPadre busca la fuente de financiamiento padre, en caso de que exista, devuelve vacio,
+// de lo contario devuelve un objeto de tipo transaccion con la información del registro de la fuente
 func crearFuenetPadre(informacionFuente map[string]interface{}, valorOriginal float64) (err error, op interface{}) {
 	var tipoFuente string
 
@@ -138,6 +137,7 @@ func crearFuenetPadre(informacionFuente map[string]interface{}, valorOriginal fl
 	return
 }
 
+// calcularValorOriginal recorre todas las afectaciones de la fuente, sumando el valor y retornando un acumulador del mismo
 func calcularValorOriginal(afectaciones []interface{}) (totalFuente float64) {
 	for _, v := range afectaciones {
 		totalFuente += v.(map[string]interface{})["Valor"].(float64)
