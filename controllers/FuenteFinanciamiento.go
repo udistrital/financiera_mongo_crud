@@ -50,7 +50,7 @@ func (c *FuenteFinanciamientoController) Post() {
 			panic(err)
 		}
 		for _, v := range movimientosFuente {
-			err := formatdata.FillStruct(fuente["FuenteFinanciamiento"], &infoFuente)
+			err := formatdata.FillStruct(v["FuenteFinanciamiento"], &infoFuente)
 			if err != nil {
 				panic(err)
 			}
