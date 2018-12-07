@@ -470,6 +470,10 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 			tipoTotal = "TotalAnuladoRp"
 			tipoMovimientoPadre = "Rp"
 			registrarValores(dataValor, "total_anulado_rp", "mes_anulado_rp")
+		case "Op":
+			tipoTotal = "TotalOp"
+			tipoMovimientoPadre = "RP"
+			registrarValores(dataValor, "total_op", "mes_op")
 		case "AnulacionCdp":
 			tipoTotal = "TotalAnuladoCdp"
 			tipoMovimientoPadre = "Cdp"
@@ -870,6 +874,8 @@ func selectTipoMovimientoPadre(tipoHijo string) {
 		tipoMovimientoPadre = "Rp"
 	case "AnulacionCdp":
 		tipoMovimientoPadre = "Cdp"
+	case "Op":
+		tipoMovimientoPadre = "Rp"
 	default:
 		tipoMovimientoPadre = ""
 	}
