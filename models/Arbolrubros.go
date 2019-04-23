@@ -138,6 +138,6 @@ func GetRaices(session *mgo.Session, ue string) ([]ArbolRubros, error) {
 		"idpsql":           bson.M{"$ne": nil},
 		"unidad_ejecutora": bson.M{"$in": []string{"0", ue}},
 	}).All(&roots)
-	beego.Info("roots: ", roots)
+	fmt.Println("roots: ", roots)
 	return roots, err
 }

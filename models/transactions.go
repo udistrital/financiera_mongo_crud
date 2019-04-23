@@ -33,7 +33,7 @@ func TrRegistroFuente(session *mgo.Session, options []interface{}) (err error) {
 			panic(err.Error())
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("Error en TrRegistroFuente: ", e)
+		fmt.Println("Error en TrRegistroFuente: ", e)
 		panic(e)
 	})
 

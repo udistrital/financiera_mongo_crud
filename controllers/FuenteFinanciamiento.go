@@ -39,7 +39,7 @@ func (c *FuenteFinanciamientoController) Post() {
 	try.This(func() {
 		session, err := db.GetSession()
 		if err != nil {
-			beego.Error("error en la sesión")
+			fmt.Println("error en la sesión")
 			panic(err)
 		}
 
@@ -81,7 +81,7 @@ func (c *FuenteFinanciamientoController) Post() {
 
 			op, err = models.EstrctTransaccionMov(session, &movimiento)
 			if err != nil {
-				beego.Error("Error en estructura de movimiento para fuente de financiamiento")
+				fmt.Println("Error en estructura de movimiento para fuente de financiamiento")
 				panic(err)
 			}
 			options = append(options, op)
@@ -94,7 +94,7 @@ func (c *FuenteFinanciamientoController) Post() {
 		defer session.Close()
 		c.Data["json"] = map[string]interface{}{"Type": "success"}
 	}).Catch(func(e try.E) {
-		beego.Error("error en Post() ", e)
+		fmt.Println("error en Post() ", e)
 		c.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 	c.ServeJSON()
@@ -131,7 +131,7 @@ func crearFuenetPadre(informacionFuente map[string]interface{}, valorOriginal fl
 	}
 	op, err = models.EstructaRegistroFuentePadreTransaccion(session, fuentePadre)
 	if err != nil {
-		beego.Error("Error al creae estructura de fuente padre")
+		fmt.Println("Error al creae estructura de fuente padre")
 		panic(err)
 	}
 	return

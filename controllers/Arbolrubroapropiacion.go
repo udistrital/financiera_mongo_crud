@@ -30,7 +30,7 @@ func (j *ArbolRubroApropiacionController) GetAll() {
 	vigencia := j.GetString(":vigencia")
 	unidadEjecutora := j.GetString(":unidadEjecutora")
 	var query = make(map[string]interface{})
-	beego.Info("get all funciton: ", vigencia, unidadEjecutora)
+	fmt.Println("get all funciton: ", vigencia, unidadEjecutora)
 	if v := j.GetString("query"); v != "" {
 		for _, cond := range strings.Split(v, ",") {
 			kv := strings.SplitN(cond, ":", 2)
@@ -326,7 +326,7 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 				models.InsertArbolRubroApropiacion(session, &nuevaApropiacion, unidadEjecutora, vigencia)
 			} else { // si el rubro actual no es una raíz, se itera para registrar toda la rama
 				if err = construirRama(nuevaApropiacion.Id, unidadEjecutora, vigencia, nuevaApropiacion.Idpsql, nuevaApropiacion.Apropiacion_inicial); err != nil {
-					beego.Error("error en construir rama: ", err.Error())
+					fmt.Println("error en construir rama: ", err.Error())
 					panic(err.Error())
 				}
 			}
@@ -334,10 +334,10 @@ func (j *ArbolRubroApropiacionController) RegistrarApropiacionInicial() {
 			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		} else {
 			panic(err.Error())
-			beego.Error("unmarshal error: ", err.Error())
+			fmt.Println("unmarshal error: ", err.Error())
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("catch error: ", e)
+		fmt.Println("catch error: ", e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 
@@ -385,7 +385,7 @@ func construirRama(codigoRubro, ue, vigencia, idApr string, nuevaApropiacion int
 		}
 
 	}).Catch(func(e try.E) {
-		beego.Error("catch error: ", e)
+		fmt.Println("catch error: ", e)
 	})
 	return err
 }
@@ -410,7 +410,7 @@ func propagarCambio(codigoRubro, ue, vigencia string, valorPropagado int) error 
 			propagarCambio(apropiacionActualizada.Padre, ue, vigencia, valorPropagado)
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("catch error: ", e)
+		fmt.Println("catch error: ", e)
 		err = errors.New("unknow error")
 	})
 	return err
@@ -479,13 +479,13 @@ func (j *ArbolRubroApropiacionController) RegistrarMovimiento() {
 			tipoMovimientoPadre = ""
 			registrarValores(dataValor, "total_adicion", "mes_modificacion")
 		case "ModificacionApr": // traslado de apropiación
-			beego.Info("Modificación de apropiación.....")
+			fmt.Println("Modificación de apropiación.....")
 			registrarModifacionApr(dataValor)
 		}
 
 		j.Data["json"] = map[string]interface{}{"Type": "success"}
 	}).Catch(func(e try.E) {
-		beego.Error("catch error registrar movimiento: ", e)
+		fmt.Println("catch error registrar movimiento: ", e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 	j.ServeJSON()
@@ -535,7 +535,7 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 		session, _ := db.GetSession()
 		err = models.RegistrarMovimiento(session, ops)
 	}).Catch(func(e try.E) {
-		beego.Error("catch error registrar modificación apropiación")
+		fmt.Println("catch error registrar modificación apropiación")
 		panic(e)
 	})
 	return err
@@ -570,7 +570,7 @@ func crearCdp(dataMovimiento map[string]interface{}, unidadEjecutora, fechaRegis
 			panic(err.Error())
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("catch error en crearCdp")
+		fmt.Println("catch error en crearCdp")
 		panic(e)
 	})
 	return
@@ -602,7 +602,7 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			}
 
 		}
-		beego.Info("nuevoValor: ", nuevoValor)
+		fmt.Println("nuevoValor: ", nuevoValor)
 		for k, v := range nuevoValor {
 			op, err := prograpacionValores(k, mes, vigencia, ue, v[mes])
 			if err != nil {
@@ -611,7 +611,7 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			ops = append(ops, op...)
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("catch error en registrarValoresModificaciones")
+		fmt.Println("catch error en registrarValoresModificaciones")
 		panic(e)
 	})
 	return
@@ -700,7 +700,7 @@ func registrarValores(dataValor map[string]interface{}, total, mes string) (err 
 		session, _ := db.GetSession()
 		models.RegistrarMovimiento(session, ops)
 	}).Catch(func(e try.E) {
-		beego.Error("catch error registrar valores: ", e)
+		fmt.Println("catch error registrar valores: ", e)
 		panic(e)
 	})
 	return err
@@ -737,7 +737,7 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 			panic(err.Error())
 		}
 	}).Catch(func(e try.E) {
-		beego.Error("error en registrar RP ", e)
+		fmt.Println("error en registrar RP ", e)
 		panic(e)
 	})
 	return ops, err
@@ -852,7 +852,7 @@ func prograpacionValores(rubro, mes, vigencia, ue string, valorPrograpado map[st
 		}
 
 	}).Catch(func(e try.E) {
-		beego.Error("catch error prograpacionValores: ", e)
+		fmt.Println("catch error prograpacionValores: ", e)
 		panic(e)
 	})
 

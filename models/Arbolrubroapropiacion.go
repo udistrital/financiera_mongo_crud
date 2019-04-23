@@ -96,7 +96,7 @@ func GetRaicesApropiacion(session *mgo.Session, ue, vigencia string) ([]ArbolRub
 		"idpsql":           bson.M{"$ne": nil},
 		"unidad_ejecutora": bson.M{"$in": []string{"0", ue}},
 	}).All(&roots)
-	// beego.Info("roots: ", roots)
+	// fmt.Println("roots: ", roots)
 	return roots, err
 }
 

@@ -198,7 +198,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 			j.Data["json"] = map[string]interface{}{"Type": "sucess"}
 		}
 	}).Catch(func(e try.E) {
-		beego.Error(e)
+		fmt.Println(e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 
@@ -220,13 +220,13 @@ func (j *ArbolRubrosController) EliminarRubro() {
 		)
 		rubroIdPsql := j.GetString(":idPsql")
 		rubroHijo, _ := models.GetArbolRubrosByIdPsql(session, rubroIdPsql)
-		beego.Info("rubroHijo: ", rubroHijo)
+		fmt.Println("rubroHijo: ", rubroHijo)
 		session, _ = db.GetSession()
 		if rubroHijo.Padre != "" {
 			rubroPadre, _ := models.GetArbolRubrosById(session, rubroHijo.Padre)
-			beego.Info("rubroPadre sin modificar: ", rubroPadre)
+			fmt.Println("rubroPadre sin modificar: ", rubroPadre)
 			rubroPadre.Hijos = remove(rubroPadre.Hijos, rubroHijo.Id)
-			beego.Info("rubroPadre modificado: ", rubroPadre)
+			fmt.Println("rubroPadre modificado: ", rubroPadre)
 			session, _ = db.GetSession()
 			err = models.EliminarRubroTransaccion(rubroPadre, rubroHijo, session)
 		} else {
@@ -240,7 +240,7 @@ func (j *ArbolRubrosController) EliminarRubro() {
 		}
 
 	}).Catch(func(e try.E) {
-		beego.Error(e)
+		fmt.Println(e)
 		j.Data["json"] = map[string]interface{}{"Type": "error"}
 	})
 	j.ServeJSON()
