@@ -195,7 +195,7 @@ func (j *ArbolRubrosController) RegistrarRubro() {
 		if err != nil {
 			panic(err.Error())
 		} else {
-			j.Data["json"] = map[string]interface{}{"Type": "sucess"}
+			j.Data["json"] = map[string]interface{}{"Type": "success"}
 		}
 	}).Catch(func(e try.E) {
 		fmt.Println(e)
