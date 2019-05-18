@@ -505,7 +505,6 @@ func registrarModifacionApr(dataValor map[string]interface{}) (err error) {
 		opsApr := registrarValoresModf(dataValor["Afectacion"].([]interface{}), strconv.Itoa(int(mes.Month())), vigencia, unidadEjecutora)
 
 		for _, v := range dataValor["Afectacion"].([]interface{}) {
-
 			value := v.(map[string]interface{}) // Convierte el elemento v en un map[string]inerface{}, para evitar una conversión constante del mismo
 
 			tipoMovimiento := value["TipoMovimiento"].(string)
@@ -586,7 +585,6 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 		for _, d := range dataModificacion {
 			data := d.(map[string]interface{})
 			data["Mes"] = mes
-
 			if nuevoValor[data["CuentaCredito"].(string)] == nil {
 				nuevoValor[data["CuentaCredito"].(string)] = make(map[string]map[string]float64)
 			}
@@ -595,14 +593,23 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 				nuevoValor[data["CuentaCredito"].(string)][mes] = make(map[string]float64)
 			}
 
+			if data["CuentaContraCredito"].(string) != "" && nuevoValor[data["CuentaContraCredito"].(string)] == nil {
+				nuevoValor[data["CuentaContraCredito"].(string)] = make(map[string]map[string]float64)
+			}
+
+			if data["CuentaContraCredito"].(string) != "" && nuevoValor[data["CuentaContraCredito"].(string)][mes] == nil {
+				nuevoValor[data["CuentaContraCredito"].(string)][mes] = make(map[string]float64)
+			}
+
 			if data["TipoMovimiento"].(string) != "Traslado" {
+
 				formatModifGeneral(data, nuevoValor)
 			} else {
 				formatModifTraslado(data, nuevoValor)
 			}
+			beego.Debug(data["TipoMovimiento"], data["CuentaContraCredito"].(string), nuevoValor)
 
 		}
-		fmt.Println("nuevoValor: ", nuevoValor)
 		for k, v := range nuevoValor {
 			op, err := prograpacionValores(k, mes, vigencia, ue, v[mes])
 			if err != nil {
@@ -611,7 +618,7 @@ func registrarValoresModf(dataModificacion []interface{}, mes, vigencia, ue stri
 			ops = append(ops, op...)
 		}
 	}).Catch(func(e try.E) {
-		fmt.Println("catch error en registrarValoresModificaciones")
+		beego.Error("catch error en registrarValoresModificaciones")
 		panic(e)
 	})
 	return
