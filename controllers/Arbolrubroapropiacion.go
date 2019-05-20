@@ -722,7 +722,6 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		for _, rubroAfecta := range dataValor["Afectacion"].([]interface{}) {
 			rubrosAfecta = append(rubrosAfecta, rubroAfecta.(map[string]interface{}))
 		}
-
 		movimiento := models.MovimientoCdp{
 			IDPsql:         strconv.Itoa(int(dataValor["Id"].(float64))),
 			RubrosAfecta:   rubrosAfecta,
@@ -738,7 +737,6 @@ func registrarDocumentoMovimiento(dataValor map[string]interface{}, total, mes s
 		ops = append(ops, op)
 
 		opp, err := propagarValorMovimientos(movimiento.DocumentoPadre, movimiento, tipoMovimiento) // opp son los movimientos a propagar en la tx de mongodb
-
 		ops = append(ops, opp...)
 		if err != nil {
 			panic(err.Error())
@@ -758,6 +756,7 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp, tM
 
 	if padre != nil {
 		afectacionWalk(&Rp, padre)
+
 		session, _ = db.GetSession()
 		opM, err := models.EstrctUpdateTransaccionMov(session, padre) //opM es la tx del movimiento a actualizar
 		if err != nil {
@@ -765,7 +764,6 @@ func propagarValorMovimientos(documentoPadre string, Rp models.MovimientoCdp, tM
 		}
 
 		op = append(op, opM)
-
 		opp, err := propagarValorMovimientos(padre.DocumentoPadre, Rp, tipoMovimientoPadre)
 		if err != nil {
 			panic(err.Error())
@@ -789,7 +787,15 @@ func afectacionWalk(Rp, Cdp *models.MovimientoCdp) {
 		for i := 0; i < len(Cdp.RubrosAfecta); i++ {
 			if Cdp.RubrosAfecta[i]["Rubro"].(string) == rubroRp["Rubro"].(string) {
 				if Cdp.RubrosAfecta[i][tipoTotal] != nil {
-					Cdp.RubrosAfecta[i][tipoTotal] = Cdp.RubrosAfecta[i][tipoTotal].(float64) + rubroRp["Valor"].(float64)
+					switch Cdp.RubrosAfecta[i][tipoTotal].(type) {
+					case int:
+						Cdp.RubrosAfecta[i][tipoTotal] = float64(Cdp.RubrosAfecta[i][tipoTotal].(int)) + rubroRp["Valor"].(float64)
+					case float64:
+						Cdp.RubrosAfecta[i][tipoTotal] = Cdp.RubrosAfecta[i][tipoTotal].(float64) + rubroRp["Valor"].(float64)
+					default:
+						panic("No suitable type assertion")
+					}
+
 				} else {
 					Cdp.RubrosAfecta[i][tipoTotal] = rubroRp["Valor"].(float64)
 				}
